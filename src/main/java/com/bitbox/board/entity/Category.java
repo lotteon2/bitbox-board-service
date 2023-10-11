@@ -1,8 +1,10 @@
 package com.bitbox.board.entity;
 
+import com.sun.istack.NotNull;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,9 +21,10 @@ public class Category {
   private Long categoryId;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "master_category_id")
+  @JoinColumn(name = "master_category_id", foreignKey = @ForeignKey(name = "fk_master_category_to_category"))
   private Category masterCategory;
 
+  @NotNull
   @Column(name = "category_name")
   private String categoryName;
 }
