@@ -1,4 +1,4 @@
-package com.bixbox.board.controller;
+package com.bitbox.board.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

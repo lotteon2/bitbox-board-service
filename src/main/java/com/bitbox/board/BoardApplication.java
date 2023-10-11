@@ -1,4 +1,4 @@
-package com.bixbox.board;
+package com.bitbox.board;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
