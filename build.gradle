@@ -36,6 +36,9 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 }
 

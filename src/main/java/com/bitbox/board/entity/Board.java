@@ -10,15 +10,27 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
+@DynamicInsert
+@DynamicUpdate
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class  Board extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "board_id")
-  private Long boardId;
+  private Long id;
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
@@ -38,6 +50,6 @@ public class  Board extends BaseEntity {
   private String boardContents;
 
   @NotNull
-  @Column(name = "is_deleted")
+  @Column(name = "is_deleted", columnDefinition = "boolean default false")
   private boolean isDeleted;
 }

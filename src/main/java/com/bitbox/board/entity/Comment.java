@@ -10,14 +10,22 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder(toBuilder = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Comment extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long commentId;
+  @Column(name = "comment_id")
+  private Long id;
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
@@ -37,6 +45,6 @@ public class Comment extends BaseEntity {
   private String commentContents;
 
   @NotNull
-  @Column(name = "is_deleted")
+  @Column(name = "is_deleted", columnDefinition = "boolean default false")
   private boolean isDeleted;
 }
