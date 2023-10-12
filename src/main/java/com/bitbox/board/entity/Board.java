@@ -42,6 +42,10 @@ public class  Board extends BaseEntity {
   private String memberId;
 
   @NotNull
+  @Column(name = "member_name")
+  private String memberName;
+
+  @NotNull
   @Column(name = "board_title")
   private String boardTitle;
 

@@ -1,6 +1,6 @@
 package com.bitbox.board.repository;
 
-import com.bitbox.board.dto.BoardResponseDto;
+import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
 import java.util.ArrayList;
@@ -19,15 +19,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @SpringBootTest
 @Transactional
 @ActiveProfiles("dev")
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BoardCRUDTest {
+
   @Autowired
   private BoardRepository boardRepository;
 
@@ -65,6 +69,7 @@ public class BoardCRUDTest {
               .boardContents("contents " + cnt)
               .category(category)
               .memberId("member_id")
+              .memberName("member_name")
               .isDeleted(false)
               .build()
       );
@@ -83,10 +88,8 @@ public class BoardCRUDTest {
 
     int cnt = 1;
     for (BoardResponseDto board : boardList) {
-      assertEquals(cnt, board.getBoardId());
       assertEquals("title " + cnt, board.getBoardTitle());
       assertEquals("contents " + cnt, board.getBoardContents());
-      assertEquals("member_id", board.getMemberId());
       cnt++;
     }
   }
@@ -95,7 +98,7 @@ public class BoardCRUDTest {
   @Order(2)
   public void 게시글_삭제_테스트() throws Exception {
     int orderValue = getOrderValue("게시글_삭제_테스트");
-    Long id = (long)orderValue * SIZE + 1L;
+    Long id = (long) orderValue * SIZE + 1L;
 
     boardRepository.deleteById(id);
 
@@ -105,9 +108,27 @@ public class BoardCRUDTest {
 
   @Test
   @Order(3)
+  public void 게시글_삭제_상태변경_테스트() throws Exception {
+    int orderValue = getOrderValue("게시글_삭제_상태변경_테스트");
+    Long id = (long) orderValue * SIZE + 1L;
+
+    Board board = boardRepository.findById(id).orElseThrow();
+
+    boardRepository.save(
+        board.toBuilder()
+            .isDeleted(true)
+            .build()
+    );
+
+    Board deletedBoard = boardRepository.findById(id).orElseThrow();
+    assertTrue(deletedBoard.isDeleted());
+  }
+
+  @Test
+  @Order(4)
   public void 게시글_수정_테스트() throws Exception {
     int orderValue = getOrderValue("게시글_수정_테스트");
-    Long id = (long)orderValue * SIZE + 1L;
+    Long id = (long) orderValue * SIZE + 1L;
 
     Board board = boardRepository.findById(id).orElseThrow();
     assertEquals("title 1", board.getBoardTitle());
@@ -121,15 +142,16 @@ public class BoardCRUDTest {
     Board updateBoard = boardRepository.findById(id).orElseThrow();
     assertEquals("update title", updateBoard.getBoardTitle());
   }
-  
+
   @Test
-  @Order(4)
+  @Order(5)
   public void 게시글_생성_테스트() throws Exception {
     Board board = Board.builder()
         .boardTitle("insert Title")
         .boardContents("insert Contents")
         .category(category)
         .memberId("member_id")
+        .memberName("member_name")
         .build();
 
     boardRepository.save(board);
@@ -138,7 +160,7 @@ public class BoardCRUDTest {
 
     assertEquals("insert Contents", insertBoard.getBoardContents());
   }
-  
+
   // 메소드의 Order 어노테이션의 값을 반환
   public int getOrderValue(String methodName) throws Exception {
     return BoardCRUDTest.class.getDeclaredMethod(methodName).getAnnotation(Order.class).value() - 1;

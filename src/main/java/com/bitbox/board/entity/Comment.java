@@ -41,6 +41,10 @@ public class Comment extends BaseEntity {
   private String memberId;
 
   @NotNull
+  @Column(name = "member_name")
+  private String memberName;
+
+  @NotNull
   @Column(name = "comment_contents")
   private String commentContents;
 

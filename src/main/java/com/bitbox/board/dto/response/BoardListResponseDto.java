@@ -1,5 +1,6 @@
-package com.bitbox.board.dto;
+package com.bitbox.board.dto.response;
 
+import com.bitbox.board.dto.CategoryDto;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardListResponseDto {
-  private Long categoryId;
-  private String categoryName;
-  private List<BoardResponseDto> boardResponseDtoList;
+  private CategoryDto category;
+  private List<BoardResponseDto> boardList;
 }
