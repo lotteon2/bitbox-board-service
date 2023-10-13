@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentDto {
+
   private Long commentId;
 
   @JsonInclude(Include.NON_NULL)

@@ -1,5 +1,6 @@
 package com.bitbox.board.entity;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,6 +10,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,35 +29,15 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Board extends BaseEntity {
+public class ClassCategory implements Serializable {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "board_id")
-  private Long id;
-
-  @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_category_to_board"))
+  @OneToOne
+  @MapsId
+  @JoinColumn(name = "category_id")
   private Category category;
 
   @NotNull
-  @Column(name = "member_id")
-  private String memberId;
-
-  @NotNull
-  @Column(name = "member_name")
-  private String memberName;
-
-  @NotNull
-  @Column(name = "board_title")
-  private String boardTitle;
-
-  @NotNull
-  @Column(name = "board_contents")
-  private String boardContents;
-
-  @NotNull
-  @Column(name = "is_deleted", columnDefinition = "boolean default false")
-  private boolean isDeleted;
+  @Column(name = "class_id")
+  private Long classId;
 }

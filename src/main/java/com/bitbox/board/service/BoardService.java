@@ -38,6 +38,13 @@ public class BoardService {
   public BoardListResponseDto getBoardList(Pageable pageable, Long categoryId) {
     CategoryDto categoryDto = categoryRepository.findById(categoryId).map(CategoryDto::new)
         .orElseThrow();
+
+    // 카테고리의 isDelete가 false 맞나? 분기
+
+
+    // 카테고리 최상단(master)를 갖나? 분기
+
+
     List<BoardResponseDto> list = boardRepository.findAll(pageable)
         .stream()
         .map(BoardResponseDto::new)

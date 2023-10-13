@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardResponseDto {
+
   private Long boardId;
   private String memberId;
   private String memeberName;
