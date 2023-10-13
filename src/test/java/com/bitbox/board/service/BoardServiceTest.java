@@ -149,9 +149,8 @@ public class BoardServiceTest {
 
     assertEquals("update title", boardDetail.getBoardResponse().getBoardTitle());
     assertEquals("update contents", boardDetail.getBoardResponse().getBoardContents());
-
   }
-  
+
   @Test
   @Order(4)
   public void 게시글_삭제_테스트() {
@@ -177,5 +176,14 @@ public class BoardServiceTest {
     BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
     assertEquals("new title", boardDetail.getBoardResponse().getBoardTitle());
     assertEquals("new contents", boardDetail.getBoardResponse().getBoardContents());
+  }
+
+  @Test
+  @Order(6)
+  public void 게시글_제목_검색_테스트() {
+    BoardListResponseDto boardListResponse = boardService.searchBoardList(pageable,
+        category.getId(), "title 1");
+
+    assertEquals("contents 1", boardListResponse.getBoardList().get(0).getBoardContents());
   }
 }

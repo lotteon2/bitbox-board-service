@@ -52,6 +52,30 @@ public class BoardService {
   }
 
   /**
+   * 게시글 제목 검색
+   *
+   * @param pageable
+   * @param categoryId
+   * @param title
+   * @return
+   */
+  public BoardListResponseDto searchBoardList(Pageable pageable, Long categoryId, String title) {
+    CategoryDto categoryDto = categoryRepository.findById(categoryId).map(CategoryDto::new)
+        .orElseThrow();
+
+    // 제목 검색, 이외 추후 추가 ?
+    List<BoardResponseDto> list = boardRepository.findAllByBoardTitle(title, pageable)
+        .stream()
+        .map(BoardResponseDto::new)
+        .collect(Collectors.toList());
+
+    return BoardListResponseDto.builder()
+        .category(categoryDto)
+        .boardList(list)
+        .build();
+  }
+
+  /**
    * 게시글 상세 조회
    *
    * @param boardId
@@ -88,6 +112,7 @@ public class BoardService {
    * @param memberName
    * @return boolean
    */
+  @Transactional
   public boolean registerBoard(BoardRegisterRequestDto boardRequestDto, String memberId,
       String memberName) {
     Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
@@ -113,6 +138,7 @@ public class BoardService {
    * @param memberName
    * @return boolean
    */
+  @Transactional
   public boolean modifyBoard(BoardModifyRequestDto boardRequestDto, String memberId,
       String memberName) {
     Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
@@ -138,6 +164,7 @@ public class BoardService {
    * @param authority
    * @return boolean
    */
+  @Transactional
   public boolean removeBoard(Long boardId, String memberId, String authority) {
     Board board = boardRepository.findById(boardId).orElseThrow();
 

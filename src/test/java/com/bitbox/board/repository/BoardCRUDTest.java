@@ -151,7 +151,8 @@ public class BoardCRUDTest {
 
     boardRepository.save(board);
 
-    Board insertBoard = boardRepository.findByBoardTitle("insert Title").orElseThrow();
+    Board insertBoard = boardRepository.findAllByBoardTitle("insert Title", pageable).getContent()
+        .get(0);
 
     assertEquals("insert Contents", insertBoard.getBoardContents());
   }
