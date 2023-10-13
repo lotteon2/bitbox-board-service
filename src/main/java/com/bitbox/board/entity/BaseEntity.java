@@ -17,7 +17,7 @@ public class BaseEntity {
 
   @NotNull
   @CreatedDate
-  @Column(updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+  @Column(updatable = false)
   private LocalDateTime createdAt;
 
   @LastModifiedDate

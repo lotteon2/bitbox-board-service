@@ -176,6 +176,7 @@ public class BoardServiceTest {
     BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
     assertEquals("new title", boardDetail.getBoardResponse().getBoardTitle());
     assertEquals("new contents", boardDetail.getBoardResponse().getBoardContents());
+    log.info("생성시각 : " + boardDetail.getBoardResponse().getCreatedAt());
   }
 
   @Test
