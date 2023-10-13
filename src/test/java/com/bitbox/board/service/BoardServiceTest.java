@@ -1,11 +1,16 @@
 package com.bitbox.board.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.bitbox.board.dto.request.BoardRegisterRequestDto;
+import com.bitbox.board.dto.request.BoardModifyRequestDto;
+import com.bitbox.board.dto.response.BoardDetailResponseDto;
 import com.bitbox.board.dto.response.BoardListResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
+import com.bitbox.board.entity.Comment;
 import com.bitbox.board.repository.BoardRepository;
 import com.bitbox.board.repository.CategoryRepository;
 import com.bitbox.board.repository.CommentRepository;
@@ -49,9 +54,16 @@ public class BoardServiceTest {
   private static final int SIZE = 10;
   // 페이지 크기
   private static final int PAGE_SIZE = 3;
+  // 테스트 진행 갯수
+  private static long testCount = 0L;
+
+  private final String memberId = "member_id";
+  private final String memberName = "member_name";
+  private final String authority = "GENERAL";
 
   @BeforeEach
   public void before() {
+    testCount++;
     pageable = PageRequest.of(0, PAGE_SIZE);
 
     category = Category.builder()
@@ -60,41 +72,110 @@ public class BoardServiceTest {
 
     categoryRepository.save(category);
 
-    List<Board> list = new ArrayList<>();
+    List<Board> listB = new ArrayList<>();
+    List<Comment> listC = new ArrayList<>();
 
-    // 1 ~ 10
+    // 제목, 내용 1 ~ 10
     int cnt = 0;
     while (cnt++ < SIZE) {
-      list.add(
-          Board.builder()
-              .boardTitle("title " + cnt)
-              .boardContents("contents " + cnt)
-              .category(category)
-              .memberId("member_id")
-              .memberName("member_name")
-              .isDeleted(false)
-              .build()
-      );
+      Board tmpBoard = Board.builder()
+          .boardTitle("title " + cnt)
+          .boardContents("contents " + cnt)
+          .category(category)
+          .memberId(memberId)
+          .memberName(memberName)
+          .build();
+      listB.add(tmpBoard);
+
+      // 게시글마다 댓글 내용 : contents 1~5
+      for (int i = 1; i <= 5; i++) {
+        Comment tmpComment = Comment.builder()
+            .board(tmpBoard)
+            .memberId(memberId)
+            .memberName(memberName)
+            .commentContents("contents " + i)
+            .build();
+        listC.add(tmpComment);
+      }
     }
 
-    boardRepository.saveAll(list);
+    boardRepository.saveAll(listB);
+    commentRepository.saveAll(listC);
   }
 
   @Test
   @Order(1)
-  public void 게시판_조회_테스트() {
-    BoardListResponseDto boardPage = boardService.getBoardList(pageable, category.getId());
+  public void 게시글_조회_테스트() {
+    BoardListResponseDto boardList = boardService.getBoardList(pageable, category.getId());
 
-    assertEquals(category.getId(), boardPage.getCategory().getCategoryId());
-    assertEquals(category.getCategoryName(), boardPage.getCategory().getCategoryName());
+    assertEquals(category.getId(), boardList.getCategory().getCategoryId());
+    assertEquals(category.getCategoryName(), boardList.getCategory().getCategoryName());
 
     int cnt = 1;
-    for (BoardResponseDto boardResponseDto : boardPage.getBoardList()) {
+    for (BoardResponseDto boardResponseDto : boardList.getBoardList()) {
       assertEquals("title " + cnt, boardResponseDto.getBoardTitle());
       assertEquals("contents " + cnt, boardResponseDto.getBoardContents());
       cnt++;
     }
-
   }
 
+  @Test
+  @Order(2)
+  public void 게시글_상세조회_테스트() {
+    Long id = (testCount - 1) * SIZE + 1;
+
+    BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
+
+    assertEquals("title 1", boardDetail.getBoardResponse().getBoardTitle());
+    assertEquals("contents 1", boardDetail.getBoardResponse().getBoardContents());
+    assertEquals("contents 1", boardDetail.getCommentList().get(0).getCommentContents());
+  }
+
+  @Test
+  @Order(3)
+  public void 게시글_수정_테스트() {
+    Long id = (testCount - 1) * SIZE + 1;
+    BoardModifyRequestDto boardModifyRequestDto = BoardModifyRequestDto.builder()
+        .boardId(id)
+        .categoryId(category.getId())
+        .memberId(memberId)
+        .boardTitle("update title")
+        .boardContents("update contents")
+        .build();
+
+    boardService.modifyBoard(boardModifyRequestDto, memberId, memberName);
+
+    BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
+
+    assertEquals("update title", boardDetail.getBoardResponse().getBoardTitle());
+    assertEquals("update contents", boardDetail.getBoardResponse().getBoardContents());
+
+  }
+  
+  @Test
+  @Order(4)
+  public void 게시글_삭제_테스트() {
+    Long id = (testCount - 1) * SIZE + 1;
+    boardService.removeBoard(id, memberId, authority);
+    BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
+
+    assertTrue(boardDetail.getBoardResponse().isDeleted());
+  }
+
+  @Test
+  @Order(5)
+  public void 게시글_작성_테스트() {
+    BoardRegisterRequestDto boardRegisterRequestDto = BoardRegisterRequestDto.builder()
+        .categoryId(category.getId())
+        .boardTitle("new title")
+        .boardContents("new contents")
+        .build();
+    boardService.registerBoard(boardRegisterRequestDto, memberId, memberName);
+
+    // 기존 번호 + 1
+    Long id = testCount * SIZE + 1;
+    BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
+    assertEquals("new title", boardDetail.getBoardResponse().getBoardTitle());
+    assertEquals("new contents", boardDetail.getBoardResponse().getBoardContents());
+  }
 }

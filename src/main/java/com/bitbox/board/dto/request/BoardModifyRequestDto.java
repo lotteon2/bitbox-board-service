@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardUpdateRequestDto {
+public class BoardModifyRequestDto {
   private Long boardId;
   private Long categoryId;
   private String memberId;

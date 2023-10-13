@@ -1,12 +1,12 @@
 package com.bitbox.board.service;
 
+import com.bitbox.board.dto.CategoryDto;
+import com.bitbox.board.dto.CommentDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
-import com.bitbox.board.dto.request.BoardUpdateRequestDto;
+import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
 import com.bitbox.board.dto.response.BoardListResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
-import com.bitbox.board.dto.CategoryDto;
-import com.bitbox.board.dto.CommentDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
 import com.bitbox.board.repository.BoardRepository;
@@ -65,15 +65,29 @@ public class BoardService {
         .map(CommentDto::new)
         .collect(Collectors.toList());
 
-    // Todo 권한 확인 후 isManagement 추가
-
-    return BoardDetailResponseDto.builder()
+    BoardDetailResponseDto boardDetail = BoardDetailResponseDto.builder()
         .category(new CategoryDto(board.getCategory()))
         .boardResponse(new BoardResponseDto(board))
         .commentList(commentList)
         .build();
+
+    if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {
+      return boardDetail.toBuilder()
+          .isManagement(true)
+          .build();
+    }
+
+    return boardDetail;
   }
 
+  /**
+   * 게시글 작성
+   *
+   * @param boardRequestDto
+   * @param memberId
+   * @param memberName
+   * @return boolean
+   */
   public boolean registerBoard(BoardRegisterRequestDto boardRequestDto, String memberId,
       String memberName) {
     Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
@@ -91,10 +105,20 @@ public class BoardService {
     return true;
   }
 
-  public boolean updateBoard(BoardUpdateRequestDto boardRequestDto, String memberId,
+  /**
+   * 게시글 수정
+   *
+   * @param boardRequestDto
+   * @param memberId
+   * @param memberName
+   * @return boolean
+   */
+  public boolean modifyBoard(BoardModifyRequestDto boardRequestDto, String memberId,
       String memberName) {
     Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
     Board board = boardRepository.findById(boardRequestDto.getBoardId()).orElseThrow();
+
+    // 수정 권한 확인 ??
 
     Board updateBoard = board.toBuilder()
         .category(category)
@@ -103,22 +127,35 @@ public class BoardService {
         .build();
 
     boardRepository.save(updateBoard);
-
     return true;
   }
 
-  public boolean deleteBoard(Long boardId, String memberId, String authority) {
-
+  /**
+   * 게시글 삭제
+   *
+   * @param boardId
+   * @param memberId
+   * @param authority
+   * @return boolean
+   */
+  public boolean removeBoard(Long boardId, String memberId, String authority) {
     Board board = boardRepository.findById(boardId).orElseThrow();
-
-    // Todo 권한 확인
 
     boardRepository.save(board.toBuilder()
         .isDeleted(true)
         .build()
     );
-
     return true;
+  }
+
+  /**
+   * 게시글에 대한 추가 관리 권한 확인
+   *
+   * @param authority
+   * @return boolean
+   */
+  public boolean isManagementAuthority(String authority) {
+    return authority.equals("ADMIN") || authority.equals("MANAGER");
   }
 
 }

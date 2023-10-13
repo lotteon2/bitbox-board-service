@@ -21,6 +21,7 @@ public class BoardResponseDto {
   private String memeberName;
   private String boardTitle;
   private String boardContents;
+  private boolean isDeleted;
   private LocalDateTime createdAt;
 
   @JsonInclude(Include.NON_NULL)
@@ -35,6 +36,7 @@ public class BoardResponseDto {
     this.memeberName = board.getMemberName();
     this.boardTitle = board.getBoardTitle();
     this.boardContents = board.getBoardContents();
+    this.isDeleted = board.isDeleted();
     this.createdAt = board.getCreatedAt();
   }
 }

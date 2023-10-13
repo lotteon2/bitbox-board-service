@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BoardRegisterRequestDto {
   private Long categoryId;
-  private String memberId;
   private String boardTitle;
   private String boardContents;
 }
