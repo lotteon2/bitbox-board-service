@@ -2,6 +2,8 @@ package com.bitbox.board.controller;
 
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
+import com.bitbox.board.dto.request.CommentModifyRequestDto;
+import com.bitbox.board.dto.request.CommentRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
@@ -95,6 +97,31 @@ public class BoardController {
     return ResponseEntity.ok(boardService.getMemberComment(pageable, memberId));
   }
 
-  // Todo 댓글 작성, 수정
-  
+  @PostMapping("/comment")
+  public ResponseEntity<Boolean> registerComment(
+      @RequestBody CommentRegisterRequestDto request,
+      @RequestHeader("memberId") String memberId,
+      @RequestHeader("memberName") String memberName
+  ) throws Exception {
+    return ResponseEntity.ok(boardService.registerComment(request, memberId, memberName));
+  }
+
+  @PutMapping("/comment")
+  public ResponseEntity<Boolean> modifyComment(
+      @RequestBody CommentModifyRequestDto request,
+      @RequestHeader("memberId") String memberId,
+      @RequestHeader("memberName") String memberName
+  ) throws Exception {
+    return ResponseEntity.ok(boardService.modifyComment(request, memberId, memberName));
+  }
+
+  @DeleteMapping("/comment/{commentId}")
+  public ResponseEntity<Boolean> removeComment(
+      @PathVariable("commentId") Long commentId,
+      @RequestHeader("memberId") String memberId,
+      @RequestHeader("memberName") String memberName
+  ) throws Exception {
+    return ResponseEntity.ok(boardService.removeComment(commentId, memberId));
+  }
+
 }

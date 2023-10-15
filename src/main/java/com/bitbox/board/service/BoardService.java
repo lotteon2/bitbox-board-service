@@ -1,5 +1,7 @@
 package com.bitbox.board.service;
 
+import com.bitbox.board.dto.request.CommentModifyRequestDto;
+import com.bitbox.board.dto.request.CommentRegisterRequestDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
@@ -13,6 +15,7 @@ import com.bitbox.board.repository.BoardRepository;
 import com.bitbox.board.repository.CategoryRepository;
 import com.bitbox.board.repository.CommentRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -194,6 +197,7 @@ public class BoardService {
 
   /**
    * 사용자 댓글 조회
+   *
    * @param pageable
    * @param memberId
    * @return
@@ -202,5 +206,62 @@ public class BoardService {
   public Page<CommentResponseDto> getMemberComment(Pageable pageable, String memberId)
       throws Exception {
     return commentRepository.findAllByMemberId(memberId, pageable).map(CommentResponseDto::new);
+  }
+
+  public boolean registerComment(CommentRegisterRequestDto commentRequestDto, String memberId,
+      String memberName) throws Exception {
+    Board board = boardRepository.findById(commentRequestDto.getBoardId()).orElseThrow();
+
+    Comment comment = Comment.builder()
+        .board(board)
+        .memberId(memberId)
+        .memberName(memberName)
+        .commentContents(commentRequestDto.getCommentContents())
+        .build();
+
+    Long masterCommentId = commentRequestDto.getMasterCommentId();
+    if (masterCommentId != null || masterCommentId > 0) {
+      comment = comment.toBuilder().masterComment(
+              commentRepository.findById(masterCommentId).orElseThrow()
+          )
+          .build();
+    }
+
+    commentRepository.save(comment);
+
+    return true;
+  }
+
+  public boolean modifyComment(CommentModifyRequestDto commentRequestDto, String memberId,
+      String memberName) throws Exception {
+    Board board = boardRepository.findById(commentRequestDto.getBoardId()).orElseThrow();
+
+    Comment comment = Comment.builder()
+        .board(board)
+        .memberId(memberId)
+        .memberName(memberName)
+        .commentContents(commentRequestDto.getCommentContents())
+        .build();
+
+    commentRepository.save(comment);
+
+    return true;
+  }
+
+  public boolean removeComment(Long commentId, String memberId) throws Exception {
+    Comment comment = commentRepository.findById(commentId).orElseThrow();
+
+    // 수정 권한 확인, 추후 Exception 상세
+    /*
+    if (!comment.getMemberId().equals(memberId))
+      throw new Exception();
+    */
+
+    commentRepository.save(
+        comment.toBuilder()
+            .isDeleted(true)
+            .build()
+    );
+    return true;
   }
 }
