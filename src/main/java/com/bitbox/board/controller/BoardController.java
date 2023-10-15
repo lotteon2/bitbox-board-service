@@ -3,10 +3,12 @@ package com.bitbox.board.controller;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
-import com.bitbox.board.dto.response.BoardListResponseDto;
+import com.bitbox.board.dto.response.BoardResponseDto;
+import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +32,7 @@ public class BoardController {
   private final BoardService boardService;
 
   @GetMapping("/{boardType}")
-  public ResponseEntity<BoardListResponseDto> getBoardList(
+  public ResponseEntity<Page<BoardResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam(value = "category") Long categoryId,
       @PageableDefault(size = 5, sort = "created_at,desc") Pageable pageable
@@ -77,7 +79,22 @@ public class BoardController {
     return ResponseEntity.ok(boardService.removeBoard(boardId, memberId, authority));
   }
 
-  // Todo 사용자 게시글, 댓글 조회
-  // Todo 댓글 작성, 수정
+  @GetMapping("/member")
+  public ResponseEntity<Page<BoardResponseDto>> getMemberBoard(
+      @PageableDefault(size = 3, sort = "created_at,desc") Pageable pageable,
+      @RequestHeader("memberId") String memberId
+  ) throws Exception {
+    return ResponseEntity.ok(boardService.getMemberBoard(pageable, memberId));
+  }
 
+  @GetMapping("/member/comment")
+  public ResponseEntity<Page<CommentResponseDto>> getMemberComment(
+      @PageableDefault(size = 3, sort = "created_at,desc") Pageable pageable,
+      @RequestHeader("memberId") String memberId
+  ) throws Exception {
+    return ResponseEntity.ok(boardService.getMemberComment(pageable, memberId));
+  }
+
+  // Todo 댓글 작성, 수정
+  
 }

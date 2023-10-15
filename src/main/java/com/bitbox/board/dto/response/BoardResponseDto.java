@@ -18,6 +18,8 @@ public class BoardResponseDto {
   private Long boardId;
   private String memberId;
   private String memeberName;
+  private Long categoryId;
+  private String categoryName;
   private String boardTitle;
   private String boardContents;
   private boolean isDeleted;
@@ -33,6 +35,8 @@ public class BoardResponseDto {
     this.boardId = board.getId();
     this.memberId = board.getMemberId();
     this.memeberName = board.getMemberName();
+    this.categoryId = board.getCategory().getId();
+    this.categoryName = board.getCategory().getCategoryName();
     this.boardTitle = board.getBoardTitle();
     this.boardContents = board.getBoardContents();
     this.isDeleted = board.isDeleted();

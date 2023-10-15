@@ -1,11 +1,9 @@
 package com.bitbox.board.service;
 
-import com.bitbox.board.dto.CategoryDto;
-import com.bitbox.board.dto.CommentDto;
+import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
-import com.bitbox.board.dto.response.BoardListResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
@@ -39,19 +37,12 @@ public class BoardService {
    * @param categoryId
    * @return BoardListResponseDto
    */
-  public BoardListResponseDto getBoardList(Pageable pageable, Long categoryId) {
+  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId) throws Exception {
     // Todo devlog일 경우 thumbnail 추가 -> S3연결이후
     Page<Board> boardList = boardCustomRepository.findAllByCategoryIdFetchJoin(categoryId,
         pageable);
 
-    return BoardListResponseDto.builder()
-        .category(new CategoryDto(boardList.getContent().get(0).getCategory()))
-        .boardList(boardList
-            .stream()
-            .map(BoardResponseDto::new)
-            .collect(Collectors.toList()
-            ))
-        .build();
+    return boardList.map(BoardResponseDto::new);
   }
 
   /**
@@ -62,18 +53,12 @@ public class BoardService {
    * @param title
    * @return BoardListResponseDto
    */
-  public BoardListResponseDto searchBoardList(Pageable pageable, Long categoryId, String title) {
+  public Page<BoardResponseDto> searchBoardList(Pageable pageable, Long categoryId, String title)
+      throws Exception {
     Page<Board> boardList = boardCustomRepository.findAllByBoardTitleAndCategoryIdFetchJoin(title,
         categoryId, pageable);
 
-    return BoardListResponseDto.builder()
-        .category(new CategoryDto(boardList.getContent().get(0).getCategory()))
-        .boardList(boardList
-            .stream()
-            .map(BoardResponseDto::new)
-            .collect(Collectors.toList()
-            ))
-        .build();
+    return boardList.map(BoardResponseDto::new);
   }
 
   /**
@@ -84,14 +69,14 @@ public class BoardService {
    * @param authority
    * @return BoardDetailResponseDto
    */
-  public BoardDetailResponseDto getBoardDetail(Long boardId, String memberId, String authority) {
+  public BoardDetailResponseDto getBoardDetail(Long boardId, String memberId, String authority)
+      throws Exception {
     Board board = boardRepository.findById(boardId).orElseThrow();
     List<Comment> comments = board.getComments();
 
     BoardDetailResponseDto boardDetail = BoardDetailResponseDto.builder()
-        .category(new CategoryDto(board.getCategory()))
         .boardResponse(new BoardResponseDto(board))
-        .commentList(comments.stream().map(CommentDto::new).collect(Collectors.toList()))
+        .commentList(comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
         .build();
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
@@ -114,7 +99,7 @@ public class BoardService {
    */
   @Transactional
   public boolean registerBoard(BoardRegisterRequestDto boardRequestDto, String memberId,
-      String memberName) {
+      String memberName) throws Exception {
     Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
 
     Board board = Board.builder()
@@ -167,7 +152,7 @@ public class BoardService {
    * @return boolean
    */
   @Transactional
-  public boolean removeBoard(Long boardId, String memberId, String authority) {
+  public boolean removeBoard(Long boardId, String memberId, String authority) throws Exception {
     Board board = boardRepository.findById(boardId).orElseThrow();
 
     // 수정 권한 확인, 추후 Exception 상세
@@ -194,4 +179,28 @@ public class BoardService {
     return authority.equals("ADMIN") || authority.equals("MANAGER");
   }
 
+  /**
+   * 사용자 게시글 조회
+   *
+   * @param pageable
+   * @param memberId
+   * @return
+   * @throws Exception
+   */
+  public Page<BoardResponseDto> getMemberBoard(Pageable pageable, String memberId)
+      throws Exception {
+    return boardRepository.findAllByMemberId(memberId, pageable).map(BoardResponseDto::new);
+  }
+
+  /**
+   * 사용자 댓글 조회
+   * @param pageable
+   * @param memberId
+   * @return
+   * @throws Exception
+   */
+  public Page<CommentResponseDto> getMemberComment(Pageable pageable, String memberId)
+      throws Exception {
+    return commentRepository.findAllByMemberId(memberId, pageable).map(CommentResponseDto::new);
+  }
 }

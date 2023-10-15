@@ -1,4 +1,4 @@
-package com.bitbox.board.dto;
+package com.bitbox.board.dto.response;
 
 import com.bitbox.board.entity.Comment;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentDto {
+public class CommentResponseDto {
 
   private Long commentId;
 
@@ -27,7 +27,7 @@ public class CommentDto {
 
   private LocalDateTime createdAt;
 
-  public CommentDto(Comment comment) {
+  public CommentResponseDto(Comment comment) {
     this.commentId = comment.getId();
     this.memberId = comment.getMemberId();
     this.commentContents = comment.getCommentContents();

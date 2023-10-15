@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
-import com.bitbox.board.dto.response.BoardListResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
@@ -24,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
@@ -105,14 +105,14 @@ public class BoardServiceTest {
 
   @Test
   @Order(1)
-  public void 게시글_조회_테스트() {
-    BoardListResponseDto boardList = boardService.getBoardList(pageable, category.getId());
+  public void 게시글_조회_테스트() throws Exception {
+    Page<BoardResponseDto> boardList = boardService.getBoardList(pageable, category.getId());
 
-    assertEquals(category.getId(), boardList.getCategory().getCategoryId());
-    assertEquals(category.getCategoryName(), boardList.getCategory().getCategoryName());
+    assertEquals(category.getId(), boardList.getContent().get(0).getCategoryId());
+    assertEquals(category.getCategoryName(), boardList.getContent().get(0).getCategoryName());
 
     int cnt = 1;
-    for (BoardResponseDto boardResponseDto : boardList.getBoardList()) {
+    for (BoardResponseDto boardResponseDto : boardList.getContent()) {
       assertEquals("title " + cnt, boardResponseDto.getBoardTitle());
       assertEquals("contents " + cnt, boardResponseDto.getBoardContents());
       cnt++;
@@ -121,7 +121,7 @@ public class BoardServiceTest {
 
   @Test
   @Order(2)
-  public void 게시글_상세조회_테스트() {
+  public void 게시글_상세조회_테스트() throws Exception {
     Long id = (testCount - 1) * SIZE + 1;
 
     BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
@@ -153,7 +153,7 @@ public class BoardServiceTest {
 
   @Test
   @Order(4)
-  public void 게시글_삭제_테스트() {
+  public void 게시글_삭제_테스트() throws Exception {
     Long id = (testCount - 1) * SIZE + 1;
     boardService.removeBoard(id, memberId, authority);
     BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
@@ -163,7 +163,7 @@ public class BoardServiceTest {
 
   @Test
   @Order(5)
-  public void 게시글_작성_테스트() {
+  public void 게시글_작성_테스트() throws Exception {
     BoardRegisterRequestDto boardRegisterRequestDto = BoardRegisterRequestDto.builder()
         .categoryId(category.getId())
         .boardTitle("new title")
@@ -181,10 +181,10 @@ public class BoardServiceTest {
 
   @Test
   @Order(6)
-  public void 게시글_제목_검색_테스트() {
-    BoardListResponseDto boardListResponse = boardService.searchBoardList(pageable,
+  public void 게시글_제목_검색_테스트() throws Exception {
+    Page<BoardResponseDto> boardListResponse = boardService.searchBoardList(pageable,
         category.getId(), "title 1");
 
-    assertEquals("contents 1", boardListResponse.getBoardList().get(0).getBoardContents());
+    assertEquals("contents 1", boardListResponse.getContent().get(0).getBoardContents());
   }
 }
