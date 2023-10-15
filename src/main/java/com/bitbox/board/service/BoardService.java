@@ -1,6 +1,5 @@
 package com.bitbox.board.service;
 
-import com.bitbox.board.BoardApplication;
 import com.bitbox.board.dto.CategoryDto;
 import com.bitbox.board.dto.CommentDto;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;

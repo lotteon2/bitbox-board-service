@@ -3,8 +3,8 @@ package com.bitbox.board.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
+import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
 import com.bitbox.board.dto.response.BoardListResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
