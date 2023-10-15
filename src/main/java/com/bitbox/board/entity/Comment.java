@@ -30,7 +30,7 @@ public class Comment extends BaseEntity {
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "board_id", foreignKey = @ForeignKey(name = "fk_board_to_category"))
+  @JoinColumn(name = "board_id", foreignKey = @ForeignKey(name = "fk_board_to_comment"))
   private Board board;
 
   @ManyToOne(fetch = FetchType.LAZY)

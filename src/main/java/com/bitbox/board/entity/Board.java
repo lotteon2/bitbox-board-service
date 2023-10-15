@@ -1,5 +1,7 @@
 package com.bitbox.board.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -36,6 +39,9 @@ public class Board extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_category_to_board"))
   private Category category;
+
+  @OneToMany(mappedBy = "board")
+  private List<Comment> comments = new ArrayList<>();
 
   @NotNull
   @Column(name = "member_id")

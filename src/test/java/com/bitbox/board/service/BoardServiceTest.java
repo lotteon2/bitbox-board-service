@@ -133,7 +133,7 @@ public class BoardServiceTest {
 
   @Test
   @Order(3)
-  public void 게시글_수정_테스트() {
+  public void 게시글_수정_테스트() throws Exception {
     Long id = (testCount - 1) * SIZE + 1;
     BoardModifyRequestDto boardModifyRequestDto = BoardModifyRequestDto.builder()
         .boardId(id)
@@ -143,7 +143,7 @@ public class BoardServiceTest {
         .boardContents("update contents")
         .build();
 
-    boardService.modifyBoard(boardModifyRequestDto, memberId, memberName);
+    boardService.modifyBoard(boardModifyRequestDto, memberId);
 
     BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
 
