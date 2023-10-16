@@ -102,18 +102,8 @@ public class BoardService {
   @Transactional
   public boolean registerBoard(BoardRegisterRequestDto boardRequestDto) throws Exception {
     Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
-
-    Board board =
-        Board.builder()
-            .boardTitle(boardRequestDto.getBoardTitle())
-            .boardContents(boardRequestDto.getBoardContents())
-            .memberId(boardRequestDto.getMemberId())
-            .memberName(boardRequestDto.getMemberName())
-            .category(category)
-            .build();
-
+    Board board = boardRequestDto.toEntity(category);
     boardRepository.save(board);
-
     return true;
   }
 
@@ -125,6 +115,7 @@ public class BoardService {
    */
   @Transactional
   public boolean modifyBoard(BoardModifyRequestDto boardRequestDto) throws Exception {
+    Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
     Board board = boardRepository.findById(boardRequestDto.getBoardId()).orElseThrow();
 
     // 수정 권한 확인, 추후 Exception 상세
@@ -135,7 +126,7 @@ public class BoardService {
 
     Board updateBoard =
         board.toBuilder()
-            .category(board.getCategory())
+            .category(category)
             .boardTitle(boardRequestDto.getBoardTitle())
             .boardContents(boardRequestDto.getBoardContents())
             .build();
@@ -205,13 +196,7 @@ public class BoardService {
   public boolean registerComment(CommentRegisterRequestDto commentRequestDto) throws Exception {
     Board board = boardRepository.findById(commentRequestDto.getBoardId()).orElseThrow();
 
-    Comment comment =
-        Comment.builder()
-            .board(board)
-            .memberId(commentRequestDto.getMemberId())
-            .memberName(commentRequestDto.getMemberName())
-            .commentContents(commentRequestDto.getCommentContents())
-            .build();
+    Comment comment = commentRequestDto.toEntity(board);
 
     Long masterCommentId = commentRequestDto.getMasterCommentId();
     if (masterCommentId != null || masterCommentId > 0) {

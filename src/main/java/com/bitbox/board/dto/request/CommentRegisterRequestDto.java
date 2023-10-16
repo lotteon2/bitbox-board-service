@@ -1,5 +1,8 @@
 package com.bitbox.board.dto.request;
 
+import com.bitbox.board.entity.Board;
+import com.bitbox.board.entity.Comment;
+import java.awt.print.Pageable;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -28,4 +31,13 @@ public class CommentRegisterRequestDto {
 
   @Nullable
   private Long masterCommentId;
+
+  public Comment toEntity(Board board) {
+    return Comment.builder()
+        .memberId(memberId)
+        .memberName(memberName)
+        .board(board)
+        .commentContents(commentContents)
+        .build();
+  }
 }
