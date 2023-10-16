@@ -254,21 +254,17 @@ public class BoardService {
   public void registerCategory(String categoryName, Long classId) throws Exception {
     try {
       Category masterCategory = categoryRepository.findByCategoryName(ALUMNI).orElseThrow();
-      Category category = Category.builder()
-          .masterCategory(masterCategory)
-          .categoryName(categoryName)
-          .build();
+      Category category =
+          Category.builder().masterCategory(masterCategory).categoryName(categoryName).build();
       categoryRepository.save(category);
 
-      ClassCategory classCategory = ClassCategory.builder()
-          .category(category)
-          .classId(classId)
-          .build();
+      ClassCategory classCategory =
+          ClassCategory.builder().category(category).classId(classId).build();
 
       classCategoryRepository.save(classCategory);
     } catch (Exception e) {
       // kafka 보상 토픽 발행
-      
+
       throw e;
     }
   }

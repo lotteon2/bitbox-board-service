@@ -1,6 +1,5 @@
 package com.bitbox.board.entity;
 
-import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -8,7 +7,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,10 +20,12 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicInsert
 @DynamicUpdate
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ClassCategory implements Serializable {
+@NoArgsConstructor
+public class ClassCategory {
 
   @Id
+  private Long categoryId;
+
   @OneToOne
   @MapsId
   @JoinColumn(name = "category_id")
@@ -34,4 +34,5 @@ public class ClassCategory implements Serializable {
   @NotNull
   @Column(name = "class_id")
   private Long classId;
+
 }
