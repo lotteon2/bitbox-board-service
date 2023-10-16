@@ -9,10 +9,12 @@ import com.bitbox.board.dto.response.BoardDetailResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
+import com.bitbox.board.entity.ClassCategory;
 import com.bitbox.board.entity.Comment;
 import com.bitbox.board.repository.BoardCustomRepository;
 import com.bitbox.board.repository.BoardRepository;
 import com.bitbox.board.repository.CategoryRepository;
+import com.bitbox.board.repository.ClassCategoryRepository;
 import com.bitbox.board.repository.CommentRepository;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,8 @@ public class BoardService {
   private final BoardCustomRepository boardCustomRepository;
   private final CategoryRepository categoryRepository;
   private final CommentRepository commentRepository;
+  private final ClassCategoryRepository classCategoryRepository;
+  private static final String ALUMNI = "alumni";
 
   /**
    * 게시글 목록 조회
@@ -241,5 +246,42 @@ public class BoardService {
 
     commentRepository.save(comment.toBuilder().isDeleted(true).build());
     return true;
+  }
+
+  // 반 생성
+  //  @KafkaListener(topics = "")
+  @Transactional
+  public void registerCategory(String categoryName, Long classId) throws Exception {
+    try {
+      Category masterCategory = categoryRepository.findByCategoryName(ALUMNI).orElseThrow();
+      Category category = Category.builder()
+          .masterCategory(masterCategory)
+          .categoryName(categoryName)
+          .build();
+      categoryRepository.save(category);
+
+      ClassCategory classCategory = ClassCategory.builder()
+          .category(category)
+          .classId(classId)
+          .build();
+
+      classCategoryRepository.save(classCategory);
+    } catch (Exception e) {
+      // kafka 보상 토픽 발행
+      
+      throw e;
+    }
+  }
+
+  //  @KafkaListener(topics = "")
+  @Transactional
+  public void removeCategory(Long categoryId) throws Exception {
+    try {
+      Category category = categoryRepository.findById(categoryId).orElseThrow();
+      categoryRepository.save(category.toBuilder().isDeleted(true).build());
+    } catch (Exception e) {
+      // kafka 보상 토픽 발행
+      throw e;
+    }
   }
 }
