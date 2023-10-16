@@ -42,8 +42,8 @@ public class BoardService {
    */
   public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId) throws Exception {
     // Todo devlog일 경우 thumbnail 추가 -> S3연결이후
-    Page<Board> boardList = boardCustomRepository.findAllByCategoryIdFetchJoin(categoryId,
-        pageable);
+    Page<Board> boardList =
+        boardCustomRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
 
     return boardList.map(BoardResponseDto::new);
   }
@@ -58,8 +58,9 @@ public class BoardService {
    */
   public Page<BoardResponseDto> searchBoardList(Pageable pageable, Long categoryId, String title)
       throws Exception {
-    Page<Board> boardList = boardCustomRepository.findAllByBoardTitleAndCategoryIdFetchJoin(title,
-        categoryId, pageable);
+    Page<Board> boardList =
+        boardCustomRepository.findAllByBoardTitleAndCategoryIdFetchJoin(
+            title, categoryId, pageable);
 
     return boardList.map(BoardResponseDto::new);
   }
@@ -77,16 +78,16 @@ public class BoardService {
     Board board = boardRepository.findById(boardId).orElseThrow();
     List<Comment> comments = board.getComments();
 
-    BoardDetailResponseDto boardDetail = BoardDetailResponseDto.builder()
-        .boardResponse(new BoardResponseDto(board))
-        .commentList(comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
-        .build();
+    BoardDetailResponseDto boardDetail =
+        BoardDetailResponseDto.builder()
+            .boardResponse(new BoardResponseDto(board))
+            .commentList(
+                comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
+            .build();
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
     if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {
-      return boardDetail.toBuilder()
-          .isManagement(true)
-          .build();
+      return boardDetail.toBuilder().isManagement(true).build();
     }
 
     return boardDetail;
@@ -96,22 +97,20 @@ public class BoardService {
    * 게시글 작성
    *
    * @param boardRequestDto
-   * @param memberId
-   * @param memberName
    * @return boolean
    */
   @Transactional
-  public boolean registerBoard(BoardRegisterRequestDto boardRequestDto, String memberId,
-      String memberName) throws Exception {
+  public boolean registerBoard(BoardRegisterRequestDto boardRequestDto) throws Exception {
     Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
 
-    Board board = Board.builder()
-        .boardTitle(boardRequestDto.getBoardTitle())
-        .boardContents(boardRequestDto.getBoardContents())
-        .memberId(memberId)
-        .memberName(memberName)
-        .category(category)
-        .build();
+    Board board =
+        Board.builder()
+            .boardTitle(boardRequestDto.getBoardTitle())
+            .boardContents(boardRequestDto.getBoardContents())
+            .memberId(boardRequestDto.getMemberId())
+            .memberName(boardRequestDto.getMemberName())
+            .category(category)
+            .build();
 
     boardRepository.save(board);
 
@@ -122,12 +121,10 @@ public class BoardService {
    * 게시글 수정
    *
    * @param boardRequestDto
-   * @param memberId
    * @return boolean
    */
   @Transactional
-  public boolean modifyBoard(BoardModifyRequestDto boardRequestDto, String memberId)
-      throws Exception {
+  public boolean modifyBoard(BoardModifyRequestDto boardRequestDto) throws Exception {
     Board board = boardRepository.findById(boardRequestDto.getBoardId()).orElseThrow();
 
     // 수정 권한 확인, 추후 Exception 상세
@@ -136,11 +133,12 @@ public class BoardService {
       throw new Exception();
     */
 
-    Board updateBoard = board.toBuilder()
-        .category(board.getCategory())
-        .boardTitle(boardRequestDto.getBoardTitle())
-        .boardContents(boardRequestDto.getBoardContents())
-        .build();
+    Board updateBoard =
+        board.toBuilder()
+            .category(board.getCategory())
+            .boardTitle(boardRequestDto.getBoardTitle())
+            .boardContents(boardRequestDto.getBoardContents())
+            .build();
 
     boardRepository.save(updateBoard);
     return true;
@@ -164,11 +162,7 @@ public class BoardService {
       throw new Exception();
     */
 
-    boardRepository.save(
-        board.toBuilder()
-            .isDeleted(true)
-            .build()
-    );
+    boardRepository.save(board.toBuilder().isDeleted(true).build());
     return true;
   }
 
@@ -208,23 +202,23 @@ public class BoardService {
     return commentRepository.findAllByMemberId(memberId, pageable).map(CommentResponseDto::new);
   }
 
-  public boolean registerComment(CommentRegisterRequestDto commentRequestDto, String memberId,
-      String memberName) throws Exception {
+  public boolean registerComment(CommentRegisterRequestDto commentRequestDto) throws Exception {
     Board board = boardRepository.findById(commentRequestDto.getBoardId()).orElseThrow();
 
-    Comment comment = Comment.builder()
-        .board(board)
-        .memberId(memberId)
-        .memberName(memberName)
-        .commentContents(commentRequestDto.getCommentContents())
-        .build();
+    Comment comment =
+        Comment.builder()
+            .board(board)
+            .memberId(commentRequestDto.getMemberId())
+            .memberName(commentRequestDto.getMemberName())
+            .commentContents(commentRequestDto.getCommentContents())
+            .build();
 
     Long masterCommentId = commentRequestDto.getMasterCommentId();
     if (masterCommentId != null || masterCommentId > 0) {
-      comment = comment.toBuilder().masterComment(
-              commentRepository.findById(masterCommentId).orElseThrow()
-          )
-          .build();
+      comment =
+          comment.toBuilder()
+              .masterComment(commentRepository.findById(masterCommentId).orElseThrow())
+              .build();
     }
 
     commentRepository.save(comment);
@@ -232,18 +226,21 @@ public class BoardService {
     return true;
   }
 
-  public boolean modifyComment(CommentModifyRequestDto commentRequestDto, String memberId,
-      String memberName) throws Exception {
+  public boolean modifyComment(CommentModifyRequestDto commentRequestDto) throws Exception {
     Board board = boardRepository.findById(commentRequestDto.getBoardId()).orElseThrow();
+    Comment comment = commentRepository.findById(commentRequestDto.getCommentId()).orElseThrow();
 
-    Comment comment = Comment.builder()
-        .board(board)
-        .memberId(memberId)
-        .memberName(memberName)
-        .commentContents(commentRequestDto.getCommentContents())
-        .build();
+    // 수정 권한 확인, 추후 Exception 상세
+    /*
+    if (!comment.getMemberId().equals(memberId))
+      throw new Exception();
+    */
 
-    commentRepository.save(comment);
+    commentRepository.save(
+        comment.toBuilder()
+            .board(board)
+            .commentContents(commentRequestDto.getCommentContents())
+            .build());
 
     return true;
   }
@@ -257,11 +254,7 @@ public class BoardService {
       throw new Exception();
     */
 
-    commentRepository.save(
-        comment.toBuilder()
-            .isDeleted(true)
-            .build()
-    );
+    commentRepository.save(comment.toBuilder().isDeleted(true).build());
     return true;
   }
 }

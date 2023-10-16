@@ -9,17 +9,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentModifyRequestDto {
 
+  @NotEmpty
+  private String memberId;
+
   @NotNull
   private Long commentId;
+
   @NotNull
   private Long boardId;
+
   @NotEmpty
   private String commentContents;
+
   @Nullable
   private Long masterCommentId;
 }

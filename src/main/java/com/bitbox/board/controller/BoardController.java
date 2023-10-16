@@ -37,8 +37,8 @@ public class BoardController {
   public ResponseEntity<Page<BoardResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam(value = "category") Long categoryId,
-      @PageableDefault(size = 5, sort = "created_at,desc") Pageable pageable
-  ) throws Exception {
+      @PageableDefault(size = 5, sort = "created_at,desc") Pageable pageable)
+      throws Exception {
 
     return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId));
   }
@@ -48,8 +48,8 @@ public class BoardController {
       @PathVariable("boardType") String boardType,
       @PathVariable("boardId") Long boardId,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("authority") String authority
-  ) throws Exception {
+      @RequestHeader("authority") String authority)
+      throws Exception {
 
     return ResponseEntity.ok(boardService.getBoardDetail(boardId, memberId, authority));
   }
@@ -58,17 +58,19 @@ public class BoardController {
   public ResponseEntity<Boolean> registerBoard(
       @RequestBody BoardRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberName") String memeberName
-  ) throws Exception {
-    return ResponseEntity.ok(boardService.registerBoard(request, memberId, memeberName));
+      @RequestHeader("memberName") String memeberName)
+      throws Exception {
+    return ResponseEntity.ok(
+        boardService.registerBoard(
+            request.toBuilder().memberId(memberId).memberName(memeberName).build()));
   }
 
   @PutMapping("/{boardType}")
   public ResponseEntity<Boolean> modifyBoard(
-      @RequestBody BoardModifyRequestDto request,
-      @RequestHeader("memberId") String memberId
-  ) throws Exception {
-    return ResponseEntity.ok(boardService.modifyBoard(request, memberId));
+      @RequestBody BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
+      throws Exception {
+    return ResponseEntity.ok(
+        boardService.modifyBoard(request.toBuilder().memberId(memberId).build()));
   }
 
   @DeleteMapping("/{boardType}/{boardId}")
@@ -76,24 +78,24 @@ public class BoardController {
       @PathVariable("boardType") String boardType,
       @PathVariable("boardId") Long boardId,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("authority") String authority
-  ) throws Exception {
+      @RequestHeader("authority") String authority)
+      throws Exception {
     return ResponseEntity.ok(boardService.removeBoard(boardId, memberId, authority));
   }
 
   @GetMapping("/member")
   public ResponseEntity<Page<BoardResponseDto>> getMemberBoard(
       @PageableDefault(size = 3, sort = "created_at,desc") Pageable pageable,
-      @RequestHeader("memberId") String memberId
-  ) throws Exception {
+      @RequestHeader("memberId") String memberId)
+      throws Exception {
     return ResponseEntity.ok(boardService.getMemberBoard(pageable, memberId));
   }
 
   @GetMapping("/member/comment")
   public ResponseEntity<Page<CommentResponseDto>> getMemberComment(
       @PageableDefault(size = 3, sort = "created_at,desc") Pageable pageable,
-      @RequestHeader("memberId") String memberId
-  ) throws Exception {
+      @RequestHeader("memberId") String memberId)
+      throws Exception {
     return ResponseEntity.ok(boardService.getMemberComment(pageable, memberId));
   }
 
@@ -101,27 +103,26 @@ public class BoardController {
   public ResponseEntity<Boolean> registerComment(
       @RequestBody CommentRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberName") String memberName
-  ) throws Exception {
-    return ResponseEntity.ok(boardService.registerComment(request, memberId, memberName));
+      @RequestHeader("memberName") String memberName)
+      throws Exception {
+    return ResponseEntity.ok(
+        boardService.registerComment(
+            request.toBuilder().memberId(memberId).memberName(memberName).build()));
   }
 
   @PutMapping("/comment")
   public ResponseEntity<Boolean> modifyComment(
-      @RequestBody CommentModifyRequestDto request,
-      @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberName") String memberName
-  ) throws Exception {
-    return ResponseEntity.ok(boardService.modifyComment(request, memberId, memberName));
+      @RequestBody CommentModifyRequestDto request, @RequestHeader("memberId") String memberId)
+      throws Exception {
+    return ResponseEntity.ok(
+        boardService.modifyComment(request.toBuilder().memberId(memberId).build()));
   }
 
   @DeleteMapping("/comment/{commentId}")
   public ResponseEntity<Boolean> removeComment(
       @PathVariable("commentId") Long commentId,
-      @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberName") String memberName
-  ) throws Exception {
+      @RequestHeader("memberId") String memberId)
+      throws Exception {
     return ResponseEntity.ok(boardService.removeComment(commentId, memberId));
   }
-
 }

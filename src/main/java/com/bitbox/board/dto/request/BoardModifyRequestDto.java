@@ -8,19 +8,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardModifyRequestDto {
+
+  @NotEmpty
+  private String memberId;
 
   @NotNull
   private Long boardId;
 
   @NotNull
   private Long categoryId;
-
-  @NotEmpty
-  private String memberId;
 
   @NotEmpty
   private String boardTitle;

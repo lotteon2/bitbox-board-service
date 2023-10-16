@@ -8,10 +8,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardRegisterRequestDto {
+
+  @NotEmpty
+  private String memberId;
+
+  @NotEmpty
+  private String memberName;
 
   @NotNull
   private Long categoryId;
