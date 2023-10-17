@@ -1,0 +1,7 @@
+server:
+  port: 8080
+spring:
+  cloud:
+    config:
+      url: "{cipher}350133ba9aea13d2c138909236b1e0dc9e75f9b35c87448482d09c2a7f9c35bacbde4d47a3d30005e4bc07c6a89d2847"
+      name: board-service
