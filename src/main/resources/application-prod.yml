@@ -1,0 +1,5 @@
+spring:
+  cloud:
+    config:
+      url: "{cipher}4dab0e6632afe07af87fba7d42447e906edc15e304d9d8efeeb5c67d028fb5422630ab73c62e88e14f592820bac40223"
+      name: board-service
