@@ -1,7 +1,7 @@
 FROM openjdk:11-jre-slim-buster
 
-ENV USE_PROFILE
-ENV ENCRYPT_KEY
+ENV USE_PROFILE ""
+ENV ENCRYPT_KEY ""
 
 COPY app.jar /app.jar
 
