@@ -1,5 +1,4 @@
-spring:
-  cloud:
-    config:
-      url: http://127.0.0.1:8888
-      name: board-service
+#spring:
+#  cloud:
+#    config:
+#      name: board-service
