@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+server:
+  port: 8080
+>>>>>>> 9e8defcebb9c8890e550b7c6a4813c5f1a347dfe
 spring:
   cloud:
     config:
