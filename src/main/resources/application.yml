@@ -11,3 +11,6 @@ eureka:
 spring:
   application:
     name: board-service
+  jpa:
+    hibernate:
+      ddl-auto: update
