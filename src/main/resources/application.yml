@@ -1,4 +1,3 @@
-#spring:
-#  cloud:
-#    config:
-#      name: board-service
+spring:
+  application:
+    name: board-service
