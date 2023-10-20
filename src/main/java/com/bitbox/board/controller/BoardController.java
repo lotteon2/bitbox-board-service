@@ -60,9 +60,7 @@ public class BoardController {
       @RequestHeader("memberId") String memberId,
       @RequestHeader("memberName") String memeberName)
       throws Exception {
-    return ResponseEntity.ok(
-        boardService.registerBoard(
-            request.toBuilder().memberId(memberId).memberName(memeberName).build()));
+    return ResponseEntity.ok(boardService.registerBoard(request, memberId, memeberName));
   }
 
   @PutMapping("/{boardType}")
@@ -105,9 +103,7 @@ public class BoardController {
       @RequestHeader("memberId") String memberId,
       @RequestHeader("memberName") String memberName)
       throws Exception {
-    return ResponseEntity.ok(
-        boardService.registerComment(
-            request.toBuilder().memberId(memberId).memberName(memberName).build()));
+    return ResponseEntity.ok(boardService.registerComment(request, memberId, memberName));
   }
 
   @PutMapping("/comment")
@@ -115,14 +111,15 @@ public class BoardController {
       @RequestBody CommentModifyRequestDto request, @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(
-        boardService.modifyComment(request.toBuilder().memberId(memberId).build()));
+        boardService.modifyComment(request, memberId));
   }
 
   @DeleteMapping("/comment/{commentId}")
   public ResponseEntity<Boolean> removeComment(
       @PathVariable("commentId") Long commentId,
-      @RequestHeader("memberId") String memberId)
+      @RequestHeader("memberId") String memberId,
+      @RequestHeader("authority") String authority)
       throws Exception {
-    return ResponseEntity.ok(boardService.removeComment(commentId, memberId));
+    return ResponseEntity.ok(boardService.removeComment(commentId, memberId, authority));
   }
 }

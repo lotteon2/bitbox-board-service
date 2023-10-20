@@ -13,10 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentModifyRequestDto {
-
-  @NotEmpty
-  private String memberId;
-
   @NotNull
   private Long commentId;
 

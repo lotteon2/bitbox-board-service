@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: "{cipher}e1c9a71e3966aaa367001bb4f3513dc9877d593682c1b18b0898e45461a0030dacf62d9be7b960e86c6feb72c14966c214af93cac146b928a9ffabfaaf05ede45bf62de6407a5dd6479f2fae2f2023be1962fd4093e12de45fbb2ae0223a8b91"
+    username: "{cipher}23805067981a71d6fe06fdf691526aeacf3c6d06502ad2624220495a13ee818a"
+    password: "{cipher}08e227f04b511df20bd0f62ad05754b65cf42c846c024b9e8407850606e6f309"
+    driver-class-name: "{cipher}f4edb441b1b7e5705878505135695a11e80970d84850d3ee3b05e61005af3401d4a770699a1eedb3a62888f0f6c5b431"
+  kafka:
+    producer:
+      bootstrap-servers: "{cipher}4ae57cc8da4bdbc8d99889193e553f03b669ace462886e74646e43c1896dbba6f740f33ee0874d54c4fdd8c102d5c5f6"
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        request.timeout.ms: 1000
+    consumer:
+      bootstrap-servers: "{cipher}4ae57cc8da4bdbc8d99889193e553f03b669ace462886e74646e43c1896dbba6f740f33ee0874d54c4fdd8c102d5c5f6"
+      group-id: bitbox
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring:
+          deserializer:
+            value:
+              delegate:
+                class: org.springframework.kafka.support.serializer.JsonDeserializer
+          json:
+            trusted:
+              packages: "*"

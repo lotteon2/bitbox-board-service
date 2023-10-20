@@ -1,38 +1,43 @@
 package com.bitbox.board.service;
 
-import com.bitbox.board.dto.request.CommentModifyRequestDto;
-import com.bitbox.board.dto.request.CommentRegisterRequestDto;
-import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
+import com.bitbox.board.dto.request.CommentModifyRequestDto;
+import com.bitbox.board.dto.request.CommentRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
+import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
 import com.bitbox.board.entity.ClassCategory;
 import com.bitbox.board.entity.Comment;
-import com.bitbox.board.repository.BoardCustomRepository;
+import com.bitbox.board.exception.BoardNotFoundException;
+import com.bitbox.board.exception.CategoryNotFoundException;
+import com.bitbox.board.exception.CommentNotFoundException;
+import com.bitbox.board.exception.NotPermissionException;
 import com.bitbox.board.repository.BoardRepository;
 import com.bitbox.board.repository.CategoryRepository;
 import com.bitbox.board.repository.ClassCategoryRepository;
 import com.bitbox.board.repository.CommentRepository;
+import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
+import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoardService {
 
   private final BoardRepository boardRepository;
-  private final BoardCustomRepository boardCustomRepository;
   private final CategoryRepository categoryRepository;
   private final CommentRepository commentRepository;
   private final ClassCategoryRepository classCategoryRepository;
@@ -47,8 +52,7 @@ public class BoardService {
    */
   public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId) throws Exception {
     // Todo devlog일 경우 thumbnail 추가 -> S3연결이후
-    Page<Board> boardList =
-        boardCustomRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
+    Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
 
     return boardList.map(BoardResponseDto::new);
   }
@@ -64,8 +68,7 @@ public class BoardService {
   public Page<BoardResponseDto> searchBoardList(Pageable pageable, Long categoryId, String title)
       throws Exception {
     Page<Board> boardList =
-        boardCustomRepository.findAllByBoardTitleAndCategoryIdFetchJoin(
-            title, categoryId, pageable);
+        boardRepository.findAllByBoardTitleAndCategoryIdFetchJoin(title, categoryId, pageable);
 
     return boardList.map(BoardResponseDto::new);
   }
@@ -80,21 +83,26 @@ public class BoardService {
    */
   public BoardDetailResponseDto getBoardDetail(Long boardId, String memberId, String authority)
       throws Exception {
-    Board board = boardRepository.findById(boardId).orElseThrow();
-    List<Comment> comments = board.getComments();
+    Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
     BoardDetailResponseDto boardDetail =
-        BoardDetailResponseDto.builder()
-            .boardResponse(new BoardResponseDto(board))
-            .commentList(
-                comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
-            .build();
+        BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
+
+    List<Comment> comments = board.getComments();
+
+    // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
+    if (comments != null) {
+      boardDetail =
+          boardDetail.toBuilder()
+              .commentList(
+                  comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
+              .build();
+    }
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
     if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {
       return boardDetail.toBuilder().isManagement(true).build();
     }
-
     return boardDetail;
   }
 
@@ -105,9 +113,14 @@ public class BoardService {
    * @return boolean
    */
   @Transactional
-  public boolean registerBoard(BoardRegisterRequestDto boardRequestDto) throws Exception {
-    Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
-    Board board = boardRequestDto.toEntity(category);
+  public boolean registerBoard(
+      BoardRegisterRequestDto boardRequestDto, String memberId, String memberName)
+      throws Exception {
+    Category category =
+        categoryRepository
+            .findById(boardRequestDto.getCategoryId())
+            .orElseThrow(CategoryNotFoundException::new);
+    Board board = boardRequestDto.toEntity(category, memberId, memberName);
     boardRepository.save(board);
     return true;
   }
@@ -120,14 +133,18 @@ public class BoardService {
    */
   @Transactional
   public boolean modifyBoard(BoardModifyRequestDto boardRequestDto) throws Exception {
-    Category category = categoryRepository.findById(boardRequestDto.getCategoryId()).orElseThrow();
-    Board board = boardRepository.findById(boardRequestDto.getBoardId()).orElseThrow();
+    Category category =
+        categoryRepository
+            .findById(boardRequestDto.getCategoryId())
+            .orElseThrow(CategoryNotFoundException::new);
+    Board board =
+        boardRepository
+            .findById(boardRequestDto.getBoardId())
+            .orElseThrow(BoardNotFoundException::new);
 
-    // 수정 권한 확인, 추후 Exception 상세
-    /*
-    if (!board.getMemberId().equals(memberId))
-      throw new Exception();
-    */
+    // 수정 권한 확인
+    if (!board.getMemberId().equals(boardRequestDto.getMemberId()))
+      throw new NotPermissionException();
 
     Board updateBoard =
         board.toBuilder()
@@ -150,26 +167,13 @@ public class BoardService {
    */
   @Transactional
   public boolean removeBoard(Long boardId, String memberId, String authority) throws Exception {
-    Board board = boardRepository.findById(boardId).orElseThrow();
+    Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
-    // 수정 권한 확인, 추후 Exception 상세
-    /*
-    if (!board.getMemberId().equals(memberId))
-      throw new Exception();
-    */
+    if (!board.getMemberId().equals(memberId) && !isManagementAuthority(authority))
+      throw new NotPermissionException();
 
     boardRepository.save(board.toBuilder().isDeleted(true).build());
     return true;
-  }
-
-  /**
-   * 게시글에 대한 추가 관리 권한 확인
-   *
-   * @param authority
-   * @return boolean
-   */
-  public boolean isManagementAuthority(String authority) {
-    return authority.equals("ADMIN") || authority.equals("MANAGER");
   }
 
   /**
@@ -177,7 +181,7 @@ public class BoardService {
    *
    * @param pageable
    * @param memberId
-   * @return
+   * @return Page<BoardResponseDto>
    * @throws Exception
    */
   public Page<BoardResponseDto> getMemberBoard(Pageable pageable, String memberId)
@@ -190,7 +194,7 @@ public class BoardService {
    *
    * @param pageable
    * @param memberId
-   * @return
+   * @return Page<CommentResponseDto>
    * @throws Exception
    */
   public Page<CommentResponseDto> getMemberComment(Pageable pageable, String memberId)
@@ -198,16 +202,31 @@ public class BoardService {
     return commentRepository.findAllByMemberId(memberId, pageable).map(CommentResponseDto::new);
   }
 
-  public boolean registerComment(CommentRegisterRequestDto commentRequestDto) throws Exception {
-    Board board = boardRepository.findById(commentRequestDto.getBoardId()).orElseThrow();
+  /**
+   * 댓글 생성
+   *
+   * @param commentRequestDto
+   * @return boolean
+   * @throws Exception
+   */
+  public boolean registerComment(
+      CommentRegisterRequestDto commentRequestDto, String memberId, String memberName)
+      throws Exception {
+    Board board =
+        boardRepository
+            .findById(commentRequestDto.getBoardId())
+            .orElseThrow(BoardNotFoundException::new);
 
-    Comment comment = commentRequestDto.toEntity(board);
+    Comment comment = commentRequestDto.toEntity(board, memberId, memberName);
 
     Long masterCommentId = commentRequestDto.getMasterCommentId();
-    if (masterCommentId != null || masterCommentId > 0) {
+    if (masterCommentId != null && masterCommentId > 0) {
       comment =
           comment.toBuilder()
-              .masterComment(commentRepository.findById(masterCommentId).orElseThrow())
+              .masterComment(
+                  commentRepository
+                      .findById(masterCommentId)
+                      .orElseThrow(CommentNotFoundException::new))
               .build();
     }
 
@@ -216,15 +235,26 @@ public class BoardService {
     return true;
   }
 
-  public boolean modifyComment(CommentModifyRequestDto commentRequestDto) throws Exception {
-    Board board = boardRepository.findById(commentRequestDto.getBoardId()).orElseThrow();
-    Comment comment = commentRepository.findById(commentRequestDto.getCommentId()).orElseThrow();
+  /**
+   * 댓글 수정
+   *
+   * @param commentRequestDto
+   * @return boolean
+   * @throws Exception
+   */
+  public boolean modifyComment(CommentModifyRequestDto commentRequestDto, String memberId)
+      throws Exception {
+    Board board =
+        boardRepository
+            .findById(commentRequestDto.getBoardId())
+            .orElseThrow(BoardNotFoundException::new);
+    Comment comment =
+        commentRepository
+            .findById(commentRequestDto.getCommentId())
+            .orElseThrow(CommentNotFoundException::new);
 
-    // 수정 권한 확인, 추후 Exception 상세
-    /*
-    if (!comment.getMemberId().equals(memberId))
-      throw new Exception();
-    */
+    // 수정 권한 확인
+    if (!comment.getMemberId().equals(memberId)) throw new NotPermissionException();
 
     commentRepository.save(
         comment.toBuilder()
@@ -235,49 +265,93 @@ public class BoardService {
     return true;
   }
 
-  public boolean removeComment(Long commentId, String memberId) throws Exception {
-    Comment comment = commentRepository.findById(commentId).orElseThrow();
+  /**
+   * 댓글 삭제
+   *
+   * @param commentId
+   * @param memberId
+   * @param authority
+   * @return boolean
+   * @throws Exception
+   */
+  public boolean removeComment(Long commentId, String memberId, String authority) throws Exception {
+    Comment comment =
+        commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
 
-    // 수정 권한 확인, 추후 Exception 상세
-    /*
-    if (!comment.getMemberId().equals(memberId))
-      throw new Exception();
-    */
+    // 삭제 권한 확인
+    if (!comment.getMemberId().equals(memberId) && !isManagementAuthority(authority))
+      throw new NotPermissionException();
 
     commentRepository.save(comment.toBuilder().isDeleted(true).build());
     return true;
   }
 
-  // 반 생성
-  //  @KafkaListener(topics = "")
+  /**
+   * 관리자 -> 반 생성
+   *
+   * @param request
+   * @throws Exception
+   */
+  //  @KafkaListener(topics = "adminBoardTopic")
   @Transactional
-  public void registerCategory(String categoryName, Long classId) throws Exception {
+  public void registerCategory(AdminBoardRegisterDto request) throws Exception {
     try {
-      Category masterCategory = categoryRepository.findByCategoryName(ALUMNI).orElseThrow();
+      //      Category masterCategory = categoryRepository.findByCategoryName(ALUMNI).orElseThrow();
+
       Category category =
-          Category.builder().masterCategory(masterCategory).categoryName(categoryName).build();
+          Category.builder()
+              //              .masterCategory(masterCategory)
+              .categoryName(request.getClassCode())
+              .build();
       categoryRepository.save(category);
 
       ClassCategory classCategory =
-          ClassCategory.builder().category(category).classId(classId).build();
-
+          ClassCategory.builder()
+              .category(category)
+              .categoryId(category.getId())
+              .classId(request.getClassId())
+              .build();
       classCategoryRepository.save(classCategory);
     } catch (Exception e) {
-      // kafka 보상 토픽 발행
-
+      // Todo : 반 게시판이 생성되지 않는다고 반 생성을 되돌리는 관점은 이상하다 -> 보상패턴 대신 고려?
       throw e;
     }
   }
 
-  //  @KafkaListener(topics = "")
+  /**
+   * 관리자 -> 반 삭제
+   *
+   * @param request
+   * @throws Exception
+   */
+  //  @KafkaListener(topics = "adminMemberBoardTopic")
   @Transactional
-  public void removeCategory(Long categoryId) throws Exception {
+  public void removeCategory(AdminMemberBoardDto request) throws Exception {
     try {
-      Category category = categoryRepository.findById(categoryId).orElseThrow();
+      ClassCategory classCategory =
+          classCategoryRepository
+              .findByClassId(request.getClassId())
+              .orElseThrow(CategoryNotFoundException::new);
+
+      Category category =
+          categoryRepository
+              .findById(classCategory.getCategoryId())
+              .orElseThrow(CategoryNotFoundException::new);
+
       categoryRepository.save(category.toBuilder().isDeleted(true).build());
     } catch (Exception e) {
       // kafka 보상 토픽 발행
       throw e;
     }
+  }
+
+  /**
+   * 게시글에 대한 추가 관리 권한 확인
+   *
+   * @param authority
+   * @return boolean
+   */
+  public boolean isManagementAuthority(String authority) {
+    return authority.equals("ADMIN") || authority.equals("MANAGER");
   }
 }
