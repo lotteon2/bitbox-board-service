@@ -14,13 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardRegisterRequestDto {
-
-  @NotEmpty
-  private String memberId;
-
-  @NotEmpty
-  private String memberName;
-
   @NotNull
   private Long categoryId;
 
@@ -30,13 +23,13 @@ public class BoardRegisterRequestDto {
   @NotEmpty
   private String boardContents;
 
-  public Board toEntity(Category category) {
+  public Board toEntity(Category category, String memberId, String memberName) {
     return Board.builder()
-        .memberId(memberId)
-        .memberName(memberName)
-        .category(category)
         .boardTitle(boardTitle)
         .boardContents(boardContents)
+        .category(category)
+        .memberId(memberId)
+        .memberName(memberName)
         .build();
   }
 }

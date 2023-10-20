@@ -2,6 +2,7 @@ package com.bitbox.board.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -41,7 +42,7 @@ public class Board extends BaseEntity {
   private Category category;
 
   @OneToMany(mappedBy = "board")
-  private List<Comment> comments = new ArrayList<>();
+  private List<Comment> comments;
 
   @NotNull
   @Column(name = "member_id")

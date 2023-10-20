@@ -16,13 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentRegisterRequestDto {
-
-  @NotEmpty
-  private String memberId;
-
-  @NotEmpty
-  private String memberName;
-
   @NotNull
   private Long boardId;
 
@@ -32,7 +25,7 @@ public class CommentRegisterRequestDto {
   @Nullable
   private Long masterCommentId;
 
-  public Comment toEntity(Board board) {
+  public Comment toEntity(Board board, String memberId, String memberName) {
     return Comment.builder()
         .memberId(memberId)
         .memberName(memberName)
