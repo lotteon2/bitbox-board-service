@@ -38,6 +38,7 @@ dependencies {
 	implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus'
 	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-config'
 	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-bootstrap'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
 	implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
