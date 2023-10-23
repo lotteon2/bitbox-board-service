@@ -4,3 +4,7 @@ spring:
   cloud:
     config:
       name: board-service
+  redis:
+    host: "{cipher}291683f648f9bc80994f6655f73decdbc2a9c7131a54f2d79a20f09093b1284ad6ef6f7e3a2686ce8471d43a259eebbd"
+    port: "{cipher}d0d9405fe0e0bdee801f12cfe6356976814d46c4fc8ac51b4591c5d9e0bae19f"
+    password: "{cipher}5f999c8d94f50bf86ca8a2fc2daebbb353a2f7b4e3857edd9e44071c2bb8920d"
