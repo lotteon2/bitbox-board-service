@@ -5,9 +5,14 @@ import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.request.CommentModifyRequestDto;
 import com.bitbox.board.dto.request.CommentRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
+import com.bitbox.board.dto.response.BoardPageReponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
+import com.bitbox.board.dto.response.CategoryDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
+import com.bitbox.board.entity.Category;
 import com.bitbox.board.service.BoardService;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,13 +39,24 @@ public class BoardController {
   private final BoardService boardService;
 
   @GetMapping("/{boardType}")
-  public ResponseEntity<Page<BoardResponseDto>> getBoardList(
+  public ResponseEntity<List<BoardPageReponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam(value = "category") Long categoryId,
-      @PageableDefault(size = 5, sort = "created_at,desc") Pageable pageable)
+      @PageableDefault(size = 4, sort = "created_at,desc") Pageable pageable)
       throws Exception {
 
-    return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId));
+    List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
+    List<BoardPageReponseDto> response = new ArrayList<>();
+
+    for (CategoryDto category : categoryList) {
+      response.add(
+          BoardPageReponseDto.builder()
+              .category(category)
+              .boardList(boardService.getBoardList(pageable, category.getCategoryId()))
+              .build()
+      );
+    }
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("{boardType}/detail/{boardId}")
@@ -58,9 +74,9 @@ public class BoardController {
   public ResponseEntity<Boolean> registerBoard(
       @RequestBody BoardRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberName") String memeberName)
+      @RequestHeader("memberName") String memberName)
       throws Exception {
-    return ResponseEntity.ok(boardService.registerBoard(request, memberId, memeberName));
+    return ResponseEntity.ok(boardService.registerBoard(request, memberId, memberName));
   }
 
   @PutMapping("/{boardType}")
@@ -110,8 +126,7 @@ public class BoardController {
   public ResponseEntity<Boolean> modifyComment(
       @RequestBody CommentModifyRequestDto request, @RequestHeader("memberId") String memberId)
       throws Exception {
-    return ResponseEntity.ok(
-        boardService.modifyComment(request, memberId));
+    return ResponseEntity.ok(boardService.modifyComment(request, memberId));
   }
 
   @DeleteMapping("/comment/{commentId}")

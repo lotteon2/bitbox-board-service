@@ -6,6 +6,7 @@ import com.bitbox.board.dto.request.CommentModifyRequestDto;
 import com.bitbox.board.dto.request.CommentRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
+import com.bitbox.board.dto.response.CategoryDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.entity.Board;
 import com.bitbox.board.entity.Category;
@@ -21,7 +22,9 @@ import com.bitbox.board.repository.ClassCategoryRepository;
 import com.bitbox.board.repository.CommentRepository;
 import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
 import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +58,17 @@ public class BoardService {
     Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
 
     return boardList.map(BoardResponseDto::new);
+  }
+
+  public List<CategoryDto> getCategoryList(Long categoryId) {
+    Category category =
+        categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
+
+    if (!Objects.isNull(category.getMasterCategory())) return new ArrayList<>();
+
+    return categoryRepository.findByMasterCategory_Id(categoryId).stream()
+        .map(CategoryDto::new)
+        .collect(Collectors.toList());
   }
 
   /**

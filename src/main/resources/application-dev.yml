@@ -26,3 +26,18 @@ spring:
           json:
             trusted:
               packages: "*"
+redis:
+  host: "{cipher}291683f648f9bc80994f6655f73decdbc2a9c7131a54f2d79a20f09093b1284ad6ef6f7e3a2686ce8471d43a259eebbd"
+  port: "{cipher}d0d9405fe0e0bdee801f12cfe6356976814d46c4fc8ac51b4591c5d9e0bae19f"
+  password: "{cipher}5f999c8d94f50bf86ca8a2fc2daebbb353a2f7b4e3857edd9e44071c2bb8920d"
+
+cloud:
+  aws:
+    s3: "{cipher}5cc85444cc1b67f9b710a8d6068f1eccaeebbce58c5de83d52b411cceb619a56"
+    region:
+      static: "{cipher}228814e6a36dc9740d6465e94ada46e2d4098c201da997da4d3dc5cc0546b21c"
+    credentials:
+      access-key: "{cipher}0a7a7742e7f12872508ef73bc90347972b1a576534af257fd5d95d7108e706ce23c257b2a4a843579abab37f693d9d43"
+      secret-key: "{cipher}9764a7e9caec1c691467bfb7a4ce2d062ba8c7dd9271bc47872ba235a57257d9889b5ff50bf80aa56879f907632cb25cb49ee047557db89c130ea5f67c56497a"
+    stack:
+      auto: false
