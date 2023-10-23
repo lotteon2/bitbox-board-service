@@ -4,29 +4,3 @@ spring:
   cloud:
     config:
       name: board-service
-  kafka:
-    producer:
-      bootstrap-servers: "{cipher}4ae57cc8da4bdbc8d99889193e553f03b669ace462886e74646e43c1896dbba6f740f33ee0874d54c4fdd8c102d5c5f6"
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        request.timeout.ms: 1000
-    consumer:
-      bootstrap-servers: "{cipher}4ae57cc8da4bdbc8d99889193e553f03b669ace462886e74646e43c1896dbba6f740f33ee0874d54c4fdd8c102d5c5f6"
-      group-id: bitbox
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-      properties:
-        spring:
-          deserializer:
-            value:
-              delegate:
-                class: org.springframework.kafka.support.serializer.JsonDeserializer
-          json:
-            trusted:
-              packages: "*"
-  redis:
-    host: "{cipher}291683f648f9bc80994f6655f73decdbc2a9c7131a54f2d79a20f09093b1284ad6ef6f7e3a2686ce8471d43a259eebbd"
-    port: "{cipher}d0d9405fe0e0bdee801f12cfe6356976814d46c4fc8ac51b4591c5d9e0bae19f"
-    password: "{cipher}5f999c8d94f50bf86ca8a2fc2daebbb353a2f7b4e3857edd9e44071c2bb8920d"
