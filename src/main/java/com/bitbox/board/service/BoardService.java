@@ -1,5 +1,6 @@
 package com.bitbox.board.service;
 
+import com.bitbox.board.config.util.S3UploadUtil;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.request.CommentModifyRequestDto;
@@ -9,19 +10,24 @@ import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.dto.response.CategoryDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.entity.Board;
+import com.bitbox.board.entity.BoardImage;
 import com.bitbox.board.entity.Category;
 import com.bitbox.board.entity.ClassCategory;
 import com.bitbox.board.entity.Comment;
+import com.bitbox.board.entity.BoardImageId;
 import com.bitbox.board.exception.BoardNotFoundException;
 import com.bitbox.board.exception.CategoryNotFoundException;
 import com.bitbox.board.exception.CommentNotFoundException;
 import com.bitbox.board.exception.NotPermissionException;
+import com.bitbox.board.repository.BoardImageRepository;
 import com.bitbox.board.repository.BoardRepository;
 import com.bitbox.board.repository.CategoryRepository;
 import com.bitbox.board.repository.ClassCategoryRepository;
 import com.bitbox.board.repository.CommentRepository;
 import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
 import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,9 +36,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -44,7 +50,27 @@ public class BoardService {
   private final CategoryRepository categoryRepository;
   private final CommentRepository commentRepository;
   private final ClassCategoryRepository classCategoryRepository;
-  private static final String ALUMNI = "alumni";
+  private final BoardImageRepository boardImageRepository;
+  private final S3UploadUtil s3UploadUtil;
+
+  public Boolean testImageInsert(MultipartFile image) throws IOException {
+    if (!image.isEmpty()) {
+      String imgUrl = s3UploadUtil.upload(image, "testImage");
+      log.info(imgUrl);
+    }
+    return true;
+  }
+
+//  public Boolean testInsert(String test) {
+//    boardImageRepository.save(BoardImage.builder()
+//            .boardImageId(BoardImageId.builder()
+//                .boardId("1")
+//                .timestamp(LocalDateTime.now().toString())
+//                .build())
+//            .imgUrl("img_url")
+//        .build());
+//    return true;
+//  }
 
   /**
    * 게시글 목록 조회

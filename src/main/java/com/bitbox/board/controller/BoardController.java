@@ -9,8 +9,8 @@ import com.bitbox.board.dto.response.BoardPageReponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.dto.response.CategoryDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
-import com.bitbox.board.entity.Category;
 import com.bitbox.board.service.BoardService;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +29,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -37,6 +40,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class BoardController {
 
   private final BoardService boardService;
+
+  @PostMapping(value = "/test/insert")
+  public Boolean testImageInsert(@RequestPart MultipartFile image) throws IOException {
+    return boardService.testImageInsert(image);
+  }
+
+//  @PostMapping("/test/insert")
+//  public Boolean testInsert() {
+//    return boardService.testInsert("test");
+//  }
 
   @GetMapping("/{boardType}")
   public ResponseEntity<List<BoardPageReponseDto>> getBoardList(
