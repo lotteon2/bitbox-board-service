@@ -125,8 +125,17 @@ public class BoardService {
     BoardDetailResponseDto boardDetail =
         BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
 
-    List<Comment> comments = board.getComments();
+    List<BoardImage> boardImageList = boardImageRepository.findByBoardId(boardId);
+    // 이미지가 있을 경우 추가 반환
+    if (!boardImageList.isEmpty()) {
+      boardDetail =
+          boardDetail.toBuilder()
+              .imgList(
+                  boardImageList.stream().map(BoardImage::getImgUrl).collect(Collectors.toList()))
+              .build();
+    }
 
+    List<Comment> comments = board.getComments();
     // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
     if (!Objects.isNull(comments)) {
       boardDetail =
