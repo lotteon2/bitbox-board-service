@@ -41,15 +41,20 @@ public class BoardController {
 
   private final BoardService boardService;
 
-  @PostMapping(value = "/test/insert")
-  public Boolean testImageInsert(@RequestPart MultipartFile image) throws IOException {
-    return boardService.testImageInsert(image);
-  }
+  //  @GetMapping("/test")
+  //  public String testGetImg() {
+  //    return boardService.getImg();
+  //  }
 
-//  @PostMapping("/test/insert")
-//  public Boolean testInsert() {
-//    return boardService.testInsert("test");
-//  }
+  //  @PostMapping(value = "/test/insert")
+  //  public Boolean testImageInsert(@RequestPart MultipartFile image) throws IOException {
+  //    return boardService.testImageInsert(image);
+  //  }
+
+  //  @PostMapping("/test/insert")
+  //  public Boolean testInsert(@RequestParam("imgUrl") String imgUrl) {
+  //    return boardService.testInsert(imgUrl);
+  //  }
 
   @GetMapping("/{boardType}")
   public ResponseEntity<List<BoardPageReponseDto>> getBoardList(
@@ -65,9 +70,28 @@ public class BoardController {
       response.add(
           BoardPageReponseDto.builder()
               .category(category)
-              .boardList(boardService.getBoardList(pageable, category.getCategoryId()))
-              .build()
-      );
+              .boardList(boardService.getBoardList(pageable, category.getCategoryId(), boardType))
+              .build());
+    }
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/{boardType}/search")
+  public ResponseEntity<List<BoardPageReponseDto>> searchBoardList(
+      @PathVariable("boardType") String boardType,
+      @RequestParam("category") Long categoryId,
+      @RequestParam("keyword") String keyword,
+      @PageableDefault(size = 4, sort = "created_at,desc") Pageable pageable)
+      throws Exception {
+
+    List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
+    List<BoardPageReponseDto> response = new ArrayList<>();
+    for (CategoryDto category : categoryList) {
+      response.add(
+          BoardPageReponseDto.builder()
+              .category(category)
+              .boardList(boardService.searchBoardList(pageable, categoryId, keyword, boardType))
+              .build());
     }
     return ResponseEntity.ok(response);
   }
@@ -85,7 +109,7 @@ public class BoardController {
 
   @PostMapping("/{boardType}")
   public ResponseEntity<Boolean> registerBoard(
-      @RequestBody BoardRegisterRequestDto request,
+      @RequestPart BoardRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
       @RequestHeader("memberName") String memberName)
       throws Exception {
@@ -94,7 +118,7 @@ public class BoardController {
 
   @PutMapping("/{boardType}")
   public ResponseEntity<Boolean> modifyBoard(
-      @RequestBody BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
+      @RequestPart BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(
         boardService.modifyBoard(request.toBuilder().memberId(memberId).build()));

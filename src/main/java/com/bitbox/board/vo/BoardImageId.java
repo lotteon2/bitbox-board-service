@@ -1,4 +1,4 @@
-package com.bitbox.board.entity;
+package com.bitbox.board.vo;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperFieldModel.DynamoDBAttributeType;
@@ -16,15 +16,15 @@ import lombok.NoArgsConstructor;
 public class BoardImageId implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String boardId;
+  private Long boardId;
   private String timestamp;
 
   @DynamoDBHashKey(attributeName = "board_id")
-  public String getBoardId() {
+  public Long getBoardId() {
     return boardId;
   }
 
-  public void setBoardId(String boardId) {
+  public void setBoardId(Long boardId) {
     this.boardId = boardId;
   }
 

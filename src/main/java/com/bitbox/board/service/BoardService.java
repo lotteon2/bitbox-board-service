@@ -14,7 +14,6 @@ import com.bitbox.board.entity.BoardImage;
 import com.bitbox.board.entity.Category;
 import com.bitbox.board.entity.ClassCategory;
 import com.bitbox.board.entity.Comment;
-import com.bitbox.board.entity.BoardImageId;
 import com.bitbox.board.exception.BoardNotFoundException;
 import com.bitbox.board.exception.CategoryNotFoundException;
 import com.bitbox.board.exception.CommentNotFoundException;
@@ -24,11 +23,13 @@ import com.bitbox.board.repository.BoardRepository;
 import com.bitbox.board.repository.CategoryRepository;
 import com.bitbox.board.repository.ClassCategoryRepository;
 import com.bitbox.board.repository.CommentRepository;
+import com.bitbox.board.vo.BoardImageId;
 import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
 import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -52,45 +53,70 @@ public class BoardService {
   private final ClassCategoryRepository classCategoryRepository;
   private final BoardImageRepository boardImageRepository;
   private final S3UploadUtil s3UploadUtil;
+  private static final String IMG_DIR = "board_img";
 
-  public Boolean testImageInsert(MultipartFile image) throws IOException {
-    if (!image.isEmpty()) {
-      String imgUrl = s3UploadUtil.upload(image, "testImage");
-      log.info(imgUrl);
-    }
-    return true;
-  }
+  //  public String getImg() {
+  //    List<BoardImage> res = boardImageRepository.findByBoardId(1L);
+  //    for (BoardImage boardImage : res) {
+  //      log.info("image url : " + boardImage.getTimestamp());
+  //      log.info("image url : " + boardImage.getImgUrl());
+  //    }
+  //    return res.get(0).getImgUrl();
+  //  }
 
-//  public Boolean testInsert(String test) {
-//    boardImageRepository.save(BoardImage.builder()
-//            .boardImageId(BoardImageId.builder()
-//                .boardId("1")
-//                .timestamp(LocalDateTime.now().toString())
-//                .build())
-//            .imgUrl("img_url")
-//        .build());
-//    return true;
-//  }
+  //  public Boolean testImageInsert(MultipartFile image) throws IOException {
+  //    if (!image.isEmpty()) {
+  //      String imgUrl = s3UploadUtil.upload(image, "testImage");
+  //      log.info(imgUrl);
+  //    }
+  //    return true;
+  //  }
+  //
+  //  public Boolean testInsert(String imgUrl) {
+  //    boardImageRepository.save(BoardImage.builder()
+  //            .boardImageId(BoardImageId.builder()
+  //                .boardId(1L)
+  //                .timestamp(LocalDateTime.now().toString())
+  //                .build())
+  //            .imgUrl(imgUrl)
+  //        .build());
+  //    return true;
+  //  }
 
   /**
-   * 게시글 목록 조회
+   * 게시글 목록 조회 boardType이 devlog일 경우 글 목록에 필요한 썸네일 추가 (DynamoDB 조회, S3 경로 반환)
    *
    * @param pageable
    * @param categoryId
    * @return BoardListResponseDto
    */
-  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId) throws Exception {
-    // Todo devlog일 경우 thumbnail 추가 -> S3연결이후
+  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType)
+      throws Exception {
     Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
+    Page<BoardResponseDto> response = boardList.map(BoardResponseDto::new);
 
-    return boardList.map(BoardResponseDto::new);
+    if (boardType.equals("devlog")) {
+      for (BoardResponseDto boardDto : response) {
+        boardDto.toBuilder()
+            .thumbnail(boardImageRepository.findByBoardId(boardDto.getBoardId()).get(0).getImgUrl())
+            .build();
+      }
+    }
+    return response;
   }
 
+  /**
+   * 카테고리 목록 조회 하위 카테고리일 경우 단일 리스트 반환 상위 카테고리일 경우 하위 카테고리 모두 반환
+   *
+   * @param categoryId
+   * @return
+   */
   public List<CategoryDto> getCategoryList(Long categoryId) {
     Category category =
         categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
 
-    if (!Objects.isNull(category.getMasterCategory())) return new ArrayList<>();
+    if (!Objects.isNull(category.getMasterCategory()))
+      return Collections.singletonList(new CategoryDto(category));
 
     return categoryRepository.findByMasterCategory_Id(categoryId).stream()
         .map(CategoryDto::new)
@@ -98,15 +124,16 @@ public class BoardService {
   }
 
   /**
-   * 게시글 제목 검색
+   * 게시글 목록 검색 제목 검색
    *
    * @param pageable
    * @param categoryId
    * @param title
    * @return BoardListResponseDto
    */
-  public Page<BoardResponseDto> searchBoardList(Pageable pageable, Long categoryId, String title)
-      throws Exception {
+  public Page<BoardResponseDto> searchBoardList(
+      Pageable pageable, Long categoryId, String title, String boardType) throws Exception {
+
     Page<Board> boardList =
         boardRepository.findAllByBoardTitleAndCategoryIdFetchJoin(title, categoryId, pageable);
 
@@ -131,7 +158,7 @@ public class BoardService {
     List<Comment> comments = board.getComments();
 
     // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
-    if (comments != null) {
+    if (!Objects.isNull(comments)) {
       boardDetail =
           boardDetail.toBuilder()
               .commentList(
@@ -156,12 +183,31 @@ public class BoardService {
   public boolean registerBoard(
       BoardRegisterRequestDto boardRequestDto, String memberId, String memberName)
       throws Exception {
+
     Category category =
         categoryRepository
             .findById(boardRequestDto.getCategoryId())
             .orElseThrow(CategoryNotFoundException::new);
+
     Board board = boardRequestDto.toEntity(category, memberId, memberName);
     boardRepository.save(board);
+
+    if (!Objects.isNull(boardRequestDto.getImages())) {
+      for (MultipartFile image : boardRequestDto.getImages()) {
+        String imgUrl = s3UploadUtil.upload(image, IMG_DIR);
+//        boardImageRepository.save(new BoardImage(new BoardImageId(board.getId(), LocalDateTime.now().toString()), imgUrl));
+
+        boardImageRepository.save(
+            BoardImage.builder()
+                .boardImageId(
+                    BoardImageId.builder()
+                        .boardId(board.getId())
+                        .timestamp(LocalDateTime.now().toString())
+                        .build())
+                .imgUrl(imgUrl)
+                .build());
+      }
+    }
     return true;
   }
 
@@ -177,6 +223,7 @@ public class BoardService {
         categoryRepository
             .findById(boardRequestDto.getCategoryId())
             .orElseThrow(CategoryNotFoundException::new);
+
     Board board =
         boardRepository
             .findById(boardRequestDto.getBoardId())
