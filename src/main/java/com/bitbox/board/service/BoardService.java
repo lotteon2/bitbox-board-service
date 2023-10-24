@@ -26,9 +26,7 @@ import com.bitbox.board.repository.CommentRepository;
 import com.bitbox.board.vo.BoardImageId;
 import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
 import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -54,34 +52,6 @@ public class BoardService {
   private final BoardImageRepository boardImageRepository;
   private final S3UploadUtil s3UploadUtil;
   private static final String IMG_DIR = "board_img";
-
-  //  public String getImg() {
-  //    List<BoardImage> res = boardImageRepository.findByBoardId(1L);
-  //    for (BoardImage boardImage : res) {
-  //      log.info("image url : " + boardImage.getTimestamp());
-  //      log.info("image url : " + boardImage.getImgUrl());
-  //    }
-  //    return res.get(0).getImgUrl();
-  //  }
-
-  //  public Boolean testImageInsert(MultipartFile image) throws IOException {
-  //    if (!image.isEmpty()) {
-  //      String imgUrl = s3UploadUtil.upload(image, "testImage");
-  //      log.info(imgUrl);
-  //    }
-  //    return true;
-  //  }
-  //
-  //  public Boolean testInsert(String imgUrl) {
-  //    boardImageRepository.save(BoardImage.builder()
-  //            .boardImageId(BoardImageId.builder()
-  //                .boardId(1L)
-  //                .timestamp(LocalDateTime.now().toString())
-  //                .build())
-  //            .imgUrl(imgUrl)
-  //        .build());
-  //    return true;
-  //  }
 
   /**
    * 게시글 목록 조회 boardType이 devlog일 경우 글 목록에 필요한 썸네일 추가 (DynamoDB 조회, S3 경로 반환)
