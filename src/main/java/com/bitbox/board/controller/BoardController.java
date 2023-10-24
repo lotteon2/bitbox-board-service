@@ -9,7 +9,6 @@ import com.bitbox.board.dto.response.BoardPageReponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.dto.response.CategoryDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
-import com.bitbox.board.entity.Category;
 import com.bitbox.board.service.BoardService;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -52,9 +52,28 @@ public class BoardController {
       response.add(
           BoardPageReponseDto.builder()
               .category(category)
-              .boardList(boardService.getBoardList(pageable, category.getCategoryId()))
-              .build()
-      );
+              .boardList(boardService.getBoardList(pageable, category.getCategoryId(), boardType))
+              .build());
+    }
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/{boardType}/search")
+  public ResponseEntity<List<BoardPageReponseDto>> searchBoardList(
+      @PathVariable("boardType") String boardType,
+      @RequestParam("category") Long categoryId,
+      @RequestParam("keyword") String keyword,
+      @PageableDefault(size = 4, sort = "created_at,desc") Pageable pageable)
+      throws Exception {
+
+    List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
+    List<BoardPageReponseDto> response = new ArrayList<>();
+    for (CategoryDto category : categoryList) {
+      response.add(
+          BoardPageReponseDto.builder()
+              .category(category)
+              .boardList(boardService.searchBoardList(pageable, categoryId, keyword, boardType))
+              .build());
     }
     return ResponseEntity.ok(response);
   }
@@ -72,7 +91,7 @@ public class BoardController {
 
   @PostMapping("/{boardType}")
   public ResponseEntity<Boolean> registerBoard(
-      @RequestBody BoardRegisterRequestDto request,
+      @RequestPart BoardRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
       @RequestHeader("memberName") String memberName)
       throws Exception {
@@ -81,7 +100,7 @@ public class BoardController {
 
   @PutMapping("/{boardType}")
   public ResponseEntity<Boolean> modifyBoard(
-      @RequestBody BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
+      @RequestPart BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(
         boardService.modifyBoard(request.toBuilder().memberId(memberId).build()));
