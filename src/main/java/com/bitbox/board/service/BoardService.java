@@ -51,7 +51,7 @@ public class BoardService {
   private final ClassCategoryRepository classCategoryRepository;
   private final BoardImageRepository boardImageRepository;
   private final S3UploadUtil s3UploadUtil;
-  private static final String IMG_DIR = "board_img";
+  private static final String IMG_DIR = "board_thumbnail";
 
   /**
    * 게시글 목록 조회 boardType이 devlog일 경우 글 목록에 필요한 썸네일 추가 (DynamoDB 조회, S3 경로 반환)
@@ -66,11 +66,16 @@ public class BoardService {
     Page<BoardResponseDto> response = boardList.map(BoardResponseDto::new);
 
     if (boardType.equals("devlog")) {
-      for (BoardResponseDto boardDto : response) {
-        boardDto.toBuilder()
-            .thumbnail(boardImageRepository.findByBoardId(boardDto.getBoardId()).get(0).getImgUrl())
-            .build();
-      }
+      response
+          .getContent()
+          .forEach(
+              boardDto -> {
+                List<BoardImage> thumbnailList =
+                    boardImageRepository.findByBoardId(boardDto.getBoardId());
+                String thumbnail = thumbnailList.get(thumbnailList.size() - 1).getImgUrl();
+
+                boardDto.toBuilder().thumbnail(thumbnail).build();
+              });
     }
     return response;
   }
@@ -125,16 +130,6 @@ public class BoardService {
     BoardDetailResponseDto boardDetail =
         BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
 
-    List<BoardImage> boardImageList = boardImageRepository.findByBoardId(boardId);
-    // 이미지가 있을 경우 추가 반환
-    if (!boardImageList.isEmpty()) {
-      boardDetail =
-          boardDetail.toBuilder()
-              .imgList(
-                  boardImageList.stream().map(BoardImage::getImgUrl).collect(Collectors.toList()))
-              .build();
-    }
-
     List<Comment> comments = board.getComments();
     // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
     if (!Objects.isNull(comments)) {
@@ -171,21 +166,17 @@ public class BoardService {
     Board board = boardRequestDto.toEntity(category, memberId, memberName);
     boardRepository.save(board);
 
-    if (!Objects.isNull(boardRequestDto.getImages())) {
-      for (MultipartFile image : boardRequestDto.getImages()) {
-        String imgUrl = s3UploadUtil.upload(image, IMG_DIR);
-//        boardImageRepository.save(new BoardImage(new BoardImageId(board.getId(), LocalDateTime.now().toString()), imgUrl));
-
-        boardImageRepository.save(
-            BoardImage.builder()
-                .boardImageId(
-                    BoardImageId.builder()
-                        .boardId(board.getId())
-                        .timestamp(LocalDateTime.now().toString())
-                        .build())
-                .imgUrl(imgUrl)
-                .build());
-      }
+    // DDB에 Board thumnail 저장
+    if (!Objects.isNull(boardRequestDto.getThumbnail())) {
+      boardImageRepository.save(
+          BoardImage.builder()
+              .boardImageId(
+                  BoardImageId.builder()
+                      .boardId(board.getId())
+                      .timestamp(LocalDateTime.now().toString())
+                      .build())
+              .imgUrl(boardRequestDto.getThumbnail())
+              .build());
     }
     return true;
   }
@@ -220,6 +211,19 @@ public class BoardService {
             .build();
 
     boardRepository.save(updateBoard);
+
+    // DDB에 Board thumnail 저장
+    if (!Objects.isNull(boardRequestDto.getThumbnail())) {
+      boardImageRepository.save(
+          BoardImage.builder()
+              .boardImageId(
+                  BoardImageId.builder()
+                      .boardId(board.getId())
+                      .timestamp(LocalDateTime.now().toString())
+                      .build())
+              .imgUrl(boardRequestDto.getThumbnail())
+              .build());
+    }
     return true;
   }
 

@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -37,15 +38,19 @@ public class Comment extends BaseEntity {
   @JoinColumn(name = "master_comment_id", foreignKey = @ForeignKey(name = "fk_master_comment_to_comment"))
   private Comment masterComment;
 
-  @NotNull
+  @NotEmpty
   @Column(name = "member_id")
   private String memberId;
 
-  @NotNull
+  @NotEmpty
   @Column(name = "member_name")
   private String memberName;
 
-  @NotNull
+  @NotEmpty
+  @Column(name = "member_profile_image")
+  private String memberProfileImage;
+
+  @NotEmpty
   @Column(name = "comment_contents")
   private String commentContents;
 

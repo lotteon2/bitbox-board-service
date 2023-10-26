@@ -1,6 +1,5 @@
 package com.bitbox.board.dto.response;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import org.springframework.data.domain.Page;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardPageReponseDto {
+public class BoardPageResponseDto {
   Page<BoardResponseDto> boardList;
   CategoryDto category;
 }

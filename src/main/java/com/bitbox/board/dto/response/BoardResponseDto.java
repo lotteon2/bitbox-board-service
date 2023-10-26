@@ -17,7 +17,7 @@ public class BoardResponseDto {
 
   private Long boardId;
   private String memberId;
-  private String memeberName;
+  private String memberName;
   private Long categoryId;
   private String categoryName;
   private String boardTitle;
@@ -34,7 +34,7 @@ public class BoardResponseDto {
   public BoardResponseDto(Board board) {
     this.boardId = board.getId();
     this.memberId = board.getMemberId();
-    this.memeberName = board.getMemberName();
+    this.memberName = board.getMemberName();
     this.categoryId = board.getCategory().getId();
     this.categoryName = board.getCategory().getCategoryName();
     this.boardTitle = board.getBoardTitle();

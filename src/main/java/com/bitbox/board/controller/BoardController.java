@@ -5,7 +5,7 @@ import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.request.CommentModifyRequestDto;
 import com.bitbox.board.dto.request.CommentRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
-import com.bitbox.board.dto.response.BoardPageReponseDto;
+import com.bitbox.board.dto.response.BoardPageResponseDto;
 import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.dto.response.CategoryDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
@@ -39,18 +39,18 @@ public class BoardController {
   private final BoardService boardService;
 
   @GetMapping("/{boardType}")
-  public ResponseEntity<List<BoardPageReponseDto>> getBoardList(
+  public ResponseEntity<List<BoardPageResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
-      @RequestParam(value = "category") Long categoryId,
+      @RequestParam("category") Long categoryId,
       @PageableDefault(size = 4, sort = "created_at,desc") Pageable pageable)
       throws Exception {
 
     List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
-    List<BoardPageReponseDto> response = new ArrayList<>();
+    List<BoardPageResponseDto> response = new ArrayList<>();
 
     for (CategoryDto category : categoryList) {
       response.add(
-          BoardPageReponseDto.builder()
+          BoardPageResponseDto.builder()
               .category(category)
               .boardList(boardService.getBoardList(pageable, category.getCategoryId(), boardType))
               .build());
@@ -58,8 +58,14 @@ public class BoardController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/category")
+  public ResponseEntity<List<CategoryDto>> getCategoryList(
+      @RequestParam("category") Long categoryId) {
+    return ResponseEntity.ok(boardService.getCategoryList(categoryId));
+  }
+
   @GetMapping("/{boardType}/search")
-  public ResponseEntity<List<BoardPageReponseDto>> searchBoardList(
+  public ResponseEntity<List<BoardPageResponseDto>> searchBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam("category") Long categoryId,
       @RequestParam("keyword") String keyword,
@@ -67,10 +73,10 @@ public class BoardController {
       throws Exception {
 
     List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
-    List<BoardPageReponseDto> response = new ArrayList<>();
+    List<BoardPageResponseDto> response = new ArrayList<>();
     for (CategoryDto category : categoryList) {
       response.add(
-          BoardPageReponseDto.builder()
+          BoardPageResponseDto.builder()
               .category(category)
               .boardList(boardService.searchBoardList(pageable, categoryId, keyword, boardType))
               .build());
@@ -91,7 +97,7 @@ public class BoardController {
 
   @PostMapping("/{boardType}")
   public ResponseEntity<Boolean> registerBoard(
-      @RequestPart BoardRegisterRequestDto request,
+      @RequestBody BoardRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
       @RequestHeader("memberName") String memberName)
       throws Exception {
@@ -100,7 +106,7 @@ public class BoardController {
 
   @PutMapping("/{boardType}")
   public ResponseEntity<Boolean> modifyBoard(
-      @RequestPart BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
+      @RequestBody BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(
         boardService.modifyBoard(request.toBuilder().memberId(memberId).build()));

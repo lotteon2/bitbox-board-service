@@ -42,5 +42,4 @@ cloud:
       secret-key: "{cipher}4e58bff60ab13f1237ea4ec409b2807501f2e7949c2a9a505005f0cb93b39ab69fcd766d6a0ca1f7e55234446bc21f8e3fa07f9931c8290b0eb4609a13c3bd3d"
     stack:
       auto: false
-    dynamo:
-      enpoint:
+

@@ -32,8 +32,5 @@ public class BoardModifyRequestDto {
   private String boardContents;
 
   @Nullable
-  private List<MultipartFile> images;
-
-  @Nullable
-  private List<String> imgUrl;
+  private String thumbnail;
 }
