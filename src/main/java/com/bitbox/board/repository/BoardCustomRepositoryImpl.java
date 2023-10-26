@@ -57,14 +57,12 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .join(board.category)
         .fetchJoin()
         .where(
-            board.boardTitle.like(boardTitle),
+            board.boardTitle.contains(boardTitle),
             board.category.id.eq(categoryId),
             board.category.isDeleted.isFalse())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();
-
-    log.info("board title : " + results.get(0).getBoardTitle());
 
     // 총 갯수
     JPAQuery<Long> count = jpaQueryFactory

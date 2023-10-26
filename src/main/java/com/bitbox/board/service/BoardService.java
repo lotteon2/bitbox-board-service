@@ -16,6 +16,7 @@ import com.bitbox.board.entity.Category;
 import com.bitbox.board.entity.ClassCategory;
 import com.bitbox.board.entity.Comment;
 import com.bitbox.board.exception.BoardNotFoundException;
+import com.bitbox.board.exception.CategoryMissMatchException;
 import com.bitbox.board.exception.CategoryNotFoundException;
 import com.bitbox.board.exception.CommentNotFoundException;
 import com.bitbox.board.exception.NotPermissionException;
@@ -77,6 +78,12 @@ public class BoardService {
   public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType)
       throws Exception {
     Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
+    if (boardList.getSize() > 0) {
+      String masterCategoryName =
+          boardList.getContent().get(0).getCategory().getMasterCategory().getCategoryName();
+      if (!masterCategoryName.equals(map.get(boardType))) throw new CategoryMissMatchException();
+    }
+
     Page<BoardResponseDto> response = boardList.map(BoardResponseDto::new);
 
     if (boardType.equals("devlog")) {
@@ -86,7 +93,10 @@ public class BoardService {
               boardDto -> {
                 List<BoardImage> thumbnailList =
                     boardImageRepository.findByBoardId(boardDto.getBoardId());
-                String thumbnail = thumbnailList.get(thumbnailList.size() - 1).getImgUrl();
+                String thumbnail =
+                    thumbnailList.size() != 0
+                        ? thumbnailList.get(thumbnailList.size() - 1).getImgUrl()
+                        : "not exist";
                 boardDto.toBuilder().thumbnail(thumbnail).build();
               });
     }
@@ -124,6 +134,12 @@ public class BoardService {
 
     Page<Board> boardList =
         boardRepository.findAllByBoardTitleAndCategoryIdFetchJoin(title, categoryId, pageable);
+
+    if (boardList.getSize() > 0) {
+      String masterCategoryName =
+          boardList.getContent().get(0).getCategory().getMasterCategory().getCategoryName();
+      if (!masterCategoryName.equals(map.get(boardType))) throw new CategoryMissMatchException();
+    }
 
     return boardList.map(BoardResponseDto::new);
   }
@@ -168,7 +184,10 @@ public class BoardService {
    */
   @Transactional
   public boolean registerBoard(
-      BoardRegisterRequestDto boardRequestDto, String memberId, String memberName)
+      BoardRegisterRequestDto boardRequestDto,
+      String memberId,
+      String memberName,
+      String memberPrfoileImg)
       throws Exception {
 
     Category category =
@@ -176,7 +195,7 @@ public class BoardService {
             .findById(boardRequestDto.getCategoryId())
             .orElseThrow(CategoryNotFoundException::new);
 
-    Board board = boardRequestDto.toEntity(category, memberId, memberName);
+    Board board = boardRequestDto.toEntity(category, memberId, memberName, memberPrfoileImg);
     boardRepository.save(board);
 
     // DDB에 Board thumnail 저장
@@ -201,7 +220,8 @@ public class BoardService {
    * @return boolean
    */
   @Transactional
-  public boolean modifyBoard(BoardModifyRequestDto boardRequestDto) throws Exception {
+  public boolean modifyBoard(
+      BoardModifyRequestDto boardRequestDto, String memberId, String authority) throws Exception {
     Category category =
         categoryRepository
             .findById(boardRequestDto.getCategoryId())
@@ -213,17 +233,15 @@ public class BoardService {
             .orElseThrow(BoardNotFoundException::new);
 
     // 수정 권한 확인
-    if (!board.getMemberId().equals(boardRequestDto.getMemberId()))
+    if (!board.getMemberId().equals(memberId) && !isManagementAuthority(authority))
       throw new NotPermissionException();
 
-    Board updateBoard =
+    boardRepository.save(
         board.toBuilder()
             .category(category)
             .boardTitle(boardRequestDto.getBoardTitle())
             .boardContents(boardRequestDto.getBoardContents())
-            .build();
-
-    boardRepository.save(updateBoard);
+            .build());
 
     // DDB에 Board thumnail 저장
     if (!Objects.isNull(boardRequestDto.getThumbnail())) {
@@ -292,15 +310,16 @@ public class BoardService {
    * @return boolean
    * @throws Exception
    */
+  @Transactional
   public boolean registerComment(
-      CommentRegisterRequestDto commentRequestDto, String memberId, String memberName)
+      CommentRegisterRequestDto commentRequestDto, String memberId, String memberName, String memberProfileImg)
       throws Exception {
     Board board =
         boardRepository
             .findById(commentRequestDto.getBoardId())
             .orElseThrow(BoardNotFoundException::new);
 
-    Comment comment = commentRequestDto.toEntity(board, memberId, memberName);
+    Comment comment = commentRequestDto.toEntity(board, memberId, memberName, memberProfileImg);
 
     Long masterCommentId = commentRequestDto.getMasterCommentId();
     if (masterCommentId != null && masterCommentId > 0) {
@@ -325,6 +344,7 @@ public class BoardService {
    * @return boolean
    * @throws Exception
    */
+  @Transactional
   public boolean modifyComment(CommentModifyRequestDto commentRequestDto, String memberId)
       throws Exception {
     Board board =
@@ -357,6 +377,7 @@ public class BoardService {
    * @return boolean
    * @throws Exception
    */
+  @Transactional
   public boolean removeComment(Long commentId, String memberId, String authority) throws Exception {
     Comment comment =
         commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
@@ -377,8 +398,9 @@ public class BoardService {
    * @param authority
    * @return
    */
+  @Transactional
   public boolean registerCategory(String categoryName, String boardType, String authority) {
-    if (!isManagementAuthority(authority)) return false;
+    if (!isManagementAuthority(authority)) throw new NotPermissionException();
 
     Category masterCategory =
         categoryRepository
@@ -399,8 +421,9 @@ public class BoardService {
    * @param authority
    * @return
    */
+  @Transactional
   public boolean modifyCategory(CategoryModifyRequestDto request, String authority) {
-    if (!isManagementAuthority(authority)) return false;
+    if (!isManagementAuthority(authority)) throw new NotPermissionException();
 
     Category category =
         categoryRepository
@@ -419,8 +442,9 @@ public class BoardService {
    * @param authority
    * @return
    */
+  @Transactional
   public boolean deleteCategory(Long categoryId, String authority) {
-    if (!isManagementAuthority(authority)) return false;
+    if (!isManagementAuthority(authority)) throw new NotPermissionException();
 
     Category category =
         categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);

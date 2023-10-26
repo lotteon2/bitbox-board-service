@@ -202,7 +202,7 @@ public class BoardServiceTest {
             .boardContents("update contents")
             .build();
 
-    boardService.modifyBoard(boardModifyRequestDto);
+    boardService.modifyBoard(boardModifyRequestDto, "member_100", authority);
 
     BoardDetailResponseDto boardDetail = boardService.getBoardDetail(id, memberId, authority);
 
@@ -226,7 +226,7 @@ public class BoardServiceTest {
                   .boardContents("update contents")
                   .build();
 
-          boardService.modifyBoard(boardModifyRequestDto);
+          boardService.modifyBoard(boardModifyRequestDto, "member_Error", authority);
         });
   }
 
@@ -254,7 +254,7 @@ public class BoardServiceTest {
             .boardContents("새로운 게시글 내용임")
             .build();
 
-    boardService.registerBoard(boardRegisterRequestDto, memberId, memberName);
+    boardService.registerBoard(boardRegisterRequestDto, memberId, memberName, "member_profile");
 
     Long id =
         boardRepository

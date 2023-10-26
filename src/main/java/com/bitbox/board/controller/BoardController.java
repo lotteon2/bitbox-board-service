@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,7 +44,7 @@ public class BoardController {
   @GetMapping("/{boardType}")
   public ResponseEntity<List<BoardPageResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
-      @RequestParam("category") Long categoryId,
+      @RequestParam("categoryId") Long categoryId,
       @PageableDefault(size = 4, sort = "created_at,desc") Pageable pageable)
       throws Exception {
 
@@ -60,9 +61,9 @@ public class BoardController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/{boardType}/category")
+  @GetMapping("/category")
   public ResponseEntity<List<CategoryDto>> getCategoryList(
-      @RequestParam("category") Long categoryId) {
+      @RequestParam("categoryId") Long categoryId) {
     return ResponseEntity.ok(boardService.getCategoryList(categoryId));
   }
 
@@ -70,29 +71,30 @@ public class BoardController {
   public ResponseEntity<Boolean> registerCategory(
       @RequestParam("categoryName") String categoryName,
       @PathVariable("boardType") String boardType,
-      @RequestHeader("authority") String authority) {
+      @RequestHeader("memberAuthority") String authority) {
     return ResponseEntity.ok(boardService.registerCategory(categoryName, boardType, authority));
   }
 
-  @PatchMapping("/{boardType}/category")
+  @PutMapping("/category")
   public ResponseEntity<Boolean> modifyCategory(
       @RequestBody CategoryModifyRequestDto categoryModifyRequestDto,
-      @RequestHeader("authority") String authority) {
+      @RequestHeader("memberAuthority") String authority) {
     return ResponseEntity.ok(boardService.modifyCategory(categoryModifyRequestDto, authority));
   }
 
-  @DeleteMapping("/{boardType}/category")
+  @DeleteMapping("/category")
   public ResponseEntity<Boolean> deleteCategory(
-      @RequestParam("categoryId") Long categoryId, @RequestHeader("authority") String authority) {
+      @RequestParam("categoryId") Long categoryId,
+      @RequestHeader("memberAuthority") String authority) {
     return ResponseEntity.ok(boardService.deleteCategory(categoryId, authority));
   }
 
   @GetMapping("/{boardType}/search")
   public ResponseEntity<List<BoardPageResponseDto>> searchBoardList(
       @PathVariable("boardType") String boardType,
-      @RequestParam("category") Long categoryId,
+      @RequestParam("categoryId") Long categoryId,
       @RequestParam("keyword") String keyword,
-      @PageableDefault(size = 4, sort = "created_at,desc") Pageable pageable)
+      @PageableDefault(size = 4, sort = "createdAt") Pageable pageable)
       throws Exception {
 
     List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
@@ -107,12 +109,11 @@ public class BoardController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("{boardType}/detail/{boardId}")
+  @GetMapping("{boardType}/detail")
   public ResponseEntity<BoardDetailResponseDto> getBoardDetail(
-      @PathVariable("boardType") String boardType,
-      @PathVariable("boardId") Long boardId,
+      @RequestParam("boardId") Long boardId,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("authority") String authority)
+      @RequestHeader("memberAuthority") String authority)
       throws Exception {
 
     return ResponseEntity.ok(boardService.getBoardDetail(boardId, memberId, authority));
@@ -122,32 +123,34 @@ public class BoardController {
   public ResponseEntity<Boolean> registerBoard(
       @RequestBody BoardRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberName") String memberName)
+      @RequestHeader("memberNickname") String memberName,
+      @RequestHeader("memberProfileImg") String memberProfileImg)
       throws Exception {
-    return ResponseEntity.ok(boardService.registerBoard(request, memberId, memberName));
+    return ResponseEntity.ok(
+        boardService.registerBoard(request, memberId, memberName, memberProfileImg));
   }
 
   @PutMapping("/{boardType}")
   public ResponseEntity<Boolean> modifyBoard(
-      @RequestBody BoardModifyRequestDto request, @RequestHeader("memberId") String memberId)
+      @RequestBody BoardModifyRequestDto request,
+      @RequestHeader("memberId") String memberId,
+      @RequestHeader("memberAuthority") String authority)
       throws Exception {
-    return ResponseEntity.ok(
-        boardService.modifyBoard(request.toBuilder().memberId(memberId).build()));
+    return ResponseEntity.ok(boardService.modifyBoard(request, memberId, authority));
   }
 
-  @DeleteMapping("/{boardType}/{boardId}")
+  @DeleteMapping("/{boardType}")
   public ResponseEntity<Boolean> removeBoard(
-      @PathVariable("boardType") String boardType,
-      @PathVariable("boardId") Long boardId,
+      @RequestParam("boardId") Long boardId,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("authority") String authority)
+      @RequestHeader("memberAuthority") String authority)
       throws Exception {
     return ResponseEntity.ok(boardService.removeBoard(boardId, memberId, authority));
   }
 
   @GetMapping("/member")
   public ResponseEntity<Page<BoardResponseDto>> getMemberBoard(
-      @PageableDefault(size = 3, sort = "created_at,desc") Pageable pageable,
+      @PageableDefault(size = 3, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(boardService.getMemberBoard(pageable, memberId));
@@ -155,7 +158,7 @@ public class BoardController {
 
   @GetMapping("/member/comment")
   public ResponseEntity<Page<CommentResponseDto>> getMemberComment(
-      @PageableDefault(size = 3, sort = "created_at,desc") Pageable pageable,
+      @PageableDefault(size = 3, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(boardService.getMemberComment(pageable, memberId));
@@ -165,9 +168,10 @@ public class BoardController {
   public ResponseEntity<Boolean> registerComment(
       @RequestBody CommentRegisterRequestDto request,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberName") String memberName)
+      @RequestHeader("memberNickname") String memberName,
+      @RequestHeader("memberProfileImg") String memberProfileImg)
       throws Exception {
-    return ResponseEntity.ok(boardService.registerComment(request, memberId, memberName));
+    return ResponseEntity.ok(boardService.registerComment(request, memberId, memberName, memberProfileImg));
   }
 
   @PutMapping("/comment")
@@ -181,7 +185,7 @@ public class BoardController {
   public ResponseEntity<Boolean> removeComment(
       @PathVariable("commentId") Long commentId,
       @RequestHeader("memberId") String memberId,
-      @RequestHeader("authority") String authority)
+      @RequestHeader("memberAuthority") String authority)
       throws Exception {
     return ResponseEntity.ok(boardService.removeComment(commentId, memberId, authority));
   }
