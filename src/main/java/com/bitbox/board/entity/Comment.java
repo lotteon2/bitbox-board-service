@@ -38,19 +38,19 @@ public class Comment extends BaseEntity {
   @JoinColumn(name = "master_comment_id", foreignKey = @ForeignKey(name = "fk_master_comment_to_comment"))
   private Comment masterComment;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "member_id")
   private String memberId;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "member_name")
   private String memberName;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "member_profile_image")
   private String memberProfileImage;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "comment_contents")
   private String commentContents;
 

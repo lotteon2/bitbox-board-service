@@ -45,27 +45,27 @@ public class Board extends BaseEntity {
   @OneToMany(mappedBy = "board")
   private List<Comment> comments;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "member_id")
   private String memberId;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "member_name")
   private String memberName;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "member_profile_image")
   private String memberProfileImage;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "board_title")
   private String boardTitle;
 
-  @NotEmpty
+  @NotNull
   @Column(name = "board_contents", columnDefinition = "LONGTEXT")
   private String boardContents;
 
   @NotNull
-  @Column(name = "is_deleted", columnDefinition = "boolean default false")
+  @Column(name = "is_deleted")
   private boolean isDeleted;
 }
