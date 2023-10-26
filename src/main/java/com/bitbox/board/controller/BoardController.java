@@ -2,6 +2,7 @@ package com.bitbox.board.controller;
 
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
+import com.bitbox.board.dto.request.CategoryModifyRequestDto;
 import com.bitbox.board.dto.request.CommentModifyRequestDto;
 import com.bitbox.board.dto.request.CommentRegisterRequestDto;
 import com.bitbox.board.dto.response.BoardDetailResponseDto;
@@ -20,6 +21,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -58,10 +60,31 @@ public class BoardController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/category")
+  @GetMapping("/{boardType}/category")
   public ResponseEntity<List<CategoryDto>> getCategoryList(
       @RequestParam("category") Long categoryId) {
     return ResponseEntity.ok(boardService.getCategoryList(categoryId));
+  }
+
+  @PostMapping("/{boardType}/category")
+  public ResponseEntity<Boolean> registerCategory(
+      @RequestParam("categoryName") String categoryName,
+      @PathVariable("boardType") String boardType,
+      @RequestHeader("authority") String authority) {
+    return ResponseEntity.ok(boardService.registerCategory(categoryName, boardType, authority));
+  }
+
+  @PatchMapping("/{boardType}/category")
+  public ResponseEntity<Boolean> modifyCategory(
+      @RequestBody CategoryModifyRequestDto categoryModifyRequestDto,
+      @RequestHeader("authority") String authority) {
+    return ResponseEntity.ok(boardService.modifyCategory(categoryModifyRequestDto, authority));
+  }
+
+  @DeleteMapping("/{boardType}/category")
+  public ResponseEntity<Boolean> deleteCategory(
+      @RequestParam("categoryId") Long categoryId, @RequestHeader("authority") String authority) {
+    return ResponseEntity.ok(boardService.deleteCategory(categoryId, authority));
   }
 
   @GetMapping("/{boardType}/search")

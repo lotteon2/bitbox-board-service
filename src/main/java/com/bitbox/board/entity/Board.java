@@ -66,6 +66,6 @@ public class Board extends BaseEntity {
   private String boardContents;
 
   @NotNull
-  @Column(name = "is_deleted")
+  @Column(name = "is_deleted", columnDefinition = "boolean default false")
   private boolean isDeleted;
 }
