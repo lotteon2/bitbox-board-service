@@ -13,6 +13,5 @@ import lombok.NoArgsConstructor;
 public class BoardDetailResponseDto {
   private BoardResponseDto boardResponse;
   private List<CommentResponseDto> commentList;
-  private List<String> imgList;
   private boolean isManagement;
 }

@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,10 @@ public class Comment extends BaseEntity {
   @NotNull
   @Column(name = "member_name")
   private String memberName;
+
+  @NotNull
+  @Column(name = "member_profile_image")
+  private String memberProfileImage;
 
   @NotNull
   @Column(name = "comment_contents")

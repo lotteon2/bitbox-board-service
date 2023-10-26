@@ -295,7 +295,7 @@ public class BoardServiceTest {
         .classCode("JX411")
         .build();
 
-    boardService.registerCategory(request);
+    boardService.registerAdminCategory(request);
 
     assertEquals(request.getClassCode(), classCategoryRepository.findByClassId(request.getClassId()).orElseThrow(
         CategoryNotFoundException::new).getCategory().getCategoryName());
@@ -309,14 +309,14 @@ public class BoardServiceTest {
         .classCode("JX411")
         .build();
 
-    boardService.registerCategory(request);
+    boardService.registerAdminCategory(request);
 
     AdminMemberBoardDto adminMemberBoardDto = AdminMemberBoardDto.builder()
         .classId(request.getClassId())
         .requestDate(LocalDateTime.now())
         .build();
 
-    boardService.removeCategory(adminMemberBoardDto);
+    boardService.removeAdminCategory(adminMemberBoardDto);
 
     assertTrue(classCategoryRepository.findByClassId(request.getClassId()).orElseThrow(
         CategoryNotFoundException::new).getCategory().isDeleted());

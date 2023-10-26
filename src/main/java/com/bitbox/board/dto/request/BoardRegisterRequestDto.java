@@ -27,7 +27,7 @@ public class BoardRegisterRequestDto {
   private String boardContents;
 
   @Nullable
-  private List<MultipartFile> images;
+  private String thumbnail;
 
   public Board toEntity(Category category, String memberId, String memberName) {
     return Board.builder()

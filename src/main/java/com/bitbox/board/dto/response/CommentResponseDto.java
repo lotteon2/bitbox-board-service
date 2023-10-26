@@ -23,6 +23,8 @@ public class CommentResponseDto {
 
   private String memberId;
 
+  private String memberProfileImage;
+
   private String commentContents;
 
   private LocalDateTime createdAt;
@@ -32,6 +34,7 @@ public class CommentResponseDto {
     this.memberId = comment.getMemberId();
     this.commentContents = comment.getCommentContents();
     this.createdAt = comment.getCreatedAt();
+    this.memberProfileImage = comment.getMemberProfileImage();
     this.masterCommentId = Optional.ofNullable(comment.getMasterComment())
         .map(Comment::getId)
         .orElse(-1L);

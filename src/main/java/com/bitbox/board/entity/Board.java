@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -53,11 +54,15 @@ public class Board extends BaseEntity {
   private String memberName;
 
   @NotNull
+  @Column(name = "member_profile_image")
+  private String memberProfileImage;
+
+  @NotNull
   @Column(name = "board_title")
   private String boardTitle;
 
   @NotNull
-  @Column(name = "board_contents")
+  @Column(name = "board_contents", columnDefinition = "LONGTEXT")
   private String boardContents;
 
   @NotNull
