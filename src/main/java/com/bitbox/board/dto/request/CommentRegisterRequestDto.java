@@ -25,10 +25,11 @@ public class CommentRegisterRequestDto {
   @Nullable
   private Long masterCommentId;
 
-  public Comment toEntity(Board board, String memberId, String memberName) {
+  public Comment toEntity(Board board, String memberId, String memberName, String memberProfileImg) {
     return Comment.builder()
         .memberId(memberId)
         .memberName(memberName)
+        .memberProfileImage(memberProfileImg)
         .board(board)
         .commentContents(commentContents)
         .build();

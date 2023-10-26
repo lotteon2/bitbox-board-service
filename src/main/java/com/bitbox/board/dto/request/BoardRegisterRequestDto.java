@@ -29,13 +29,14 @@ public class BoardRegisterRequestDto {
   @Nullable
   private String thumbnail;
 
-  public Board toEntity(Category category, String memberId, String memberName) {
+  public Board toEntity(Category category, String memberId, String memberName, String memberProfileImg) {
     return Board.builder()
         .boardTitle(boardTitle)
         .boardContents(boardContents)
         .category(category)
         .memberId(memberId)
         .memberName(memberName)
+        .memberProfileImage(memberProfileImg)
         .build();
   }
 }
