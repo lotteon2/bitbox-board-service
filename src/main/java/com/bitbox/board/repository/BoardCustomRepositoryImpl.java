@@ -30,6 +30,7 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .join(board.category)
         .fetchJoin()
         .where(
+            board.isDeleted.isFalse(),
             board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
             board.category.isDeleted.isFalse()
         )
@@ -50,6 +51,7 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .join(board.category)
         .fetchJoin()
         .where(
+            board.isDeleted.isFalse(),
             board.boardTitle.contains(boardTitle),
             board.category.id.eq(categoryId),
             board.category.isDeleted.isFalse())
