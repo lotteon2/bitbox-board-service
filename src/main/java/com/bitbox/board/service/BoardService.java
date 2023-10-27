@@ -87,18 +87,13 @@ public class BoardService {
     Page<BoardResponseDto> response = boardList.map(BoardResponseDto::new);
 
     if (boardType.equals("devlog")) {
-      response
-          .getContent()
-          .forEach(
-              boardDto -> {
-                List<BoardImage> thumbnailList =
-                    boardImageRepository.findByBoardId(boardDto.getBoardId());
-                String thumbnail =
-                    thumbnailList.size() != 0
-                        ? thumbnailList.get(thumbnailList.size() - 1).getImgUrl()
-                        : "not exist";
-                boardDto.toBuilder().thumbnail(thumbnail).build();
-              });
+      for (BoardResponseDto boardResponseDto : response) {
+        List<BoardImage> boardImageList =
+            boardImageRepository.findByBoardId(boardResponseDto.getBoardId());
+
+        if (boardImageList.isEmpty()) continue;
+        boardResponseDto.updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
+      }
     }
     return response;
   }
@@ -312,7 +307,10 @@ public class BoardService {
    */
   @Transactional
   public boolean registerComment(
-      CommentRegisterRequestDto commentRequestDto, String memberId, String memberName, String memberProfileImg)
+      CommentRegisterRequestDto commentRequestDto,
+      String memberId,
+      String memberName,
+      String memberProfileImg)
       throws Exception {
     Board board =
         boardRepository
@@ -356,9 +354,7 @@ public class BoardService {
     if (!comment.getMemberId().equals(memberId)) throw new NotPermissionException();
 
     commentRepository.save(
-        comment.toBuilder()
-            .commentContents(commentRequestDto.getCommentContents())
-            .build());
+        comment.toBuilder().commentContents(commentRequestDto.getCommentContents()).build());
 
     return true;
   }

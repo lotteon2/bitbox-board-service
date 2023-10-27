@@ -25,10 +25,10 @@ public class BoardResponseDto {
   private boolean isDeleted;
   private LocalDateTime createdAt;
 
-//  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   private LocalDateTime updatedAt;
 
-//  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   private String thumbnail;
 
   public BoardResponseDto(Board board) {
@@ -41,5 +41,9 @@ public class BoardResponseDto {
     this.boardContents = board.getBoardContents();
     this.isDeleted = board.isDeleted();
     this.createdAt = board.getCreatedAt();
+  }
+
+  public void updateThumbnail(String thumbnail) {
+    this.thumbnail = thumbnail;
   }
 }
