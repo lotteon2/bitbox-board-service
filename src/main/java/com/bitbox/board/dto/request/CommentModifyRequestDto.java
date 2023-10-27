@@ -16,12 +16,6 @@ public class CommentModifyRequestDto {
   @NotNull
   private Long commentId;
 
-  @NotNull
-  private Long boardId;
-
   @NotEmpty
   private String commentContents;
-
-  @Nullable
-  private Long masterCommentId;
 }
