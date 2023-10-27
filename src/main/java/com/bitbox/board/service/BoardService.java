@@ -78,7 +78,7 @@ public class BoardService {
   public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType)
       throws Exception {
     Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
-    if (boardList.getSize() > 0) {
+    if (!boardList.getContent().isEmpty()) {
       String masterCategoryName =
           boardList.getContent().get(0).getCategory().getMasterCategory().getCategoryName();
       if (!masterCategoryName.equals(map.get(boardType))) throw new CategoryMissMatchException();
