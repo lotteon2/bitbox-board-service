@@ -42,23 +42,23 @@ public class BoardController {
   private final BoardService boardService;
 
   @GetMapping("/{boardType}")
-  public ResponseEntity<List<BoardPageResponseDto>> getBoardList(
+  public ResponseEntity<Page<BoardResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam("categoryId") Long categoryId,
-      @PageableDefault(size = 4, sort = "created_at,desc") Pageable pageable)
+      @PageableDefault(size = 10, sort = "created_at,desc") Pageable pageable)
       throws Exception {
 
-    List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
-    List<BoardPageResponseDto> response = new ArrayList<>();
-
-    for (CategoryDto category : categoryList) {
-      response.add(
-          BoardPageResponseDto.builder()
-              .category(category)
-              .boardList(boardService.getBoardList(pageable, category.getCategoryId(), boardType))
-              .build());
-    }
-    return ResponseEntity.ok(response);
+//    List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
+//    List<BoardPageResponseDto> response = new ArrayList<>();
+//
+//    for (CategoryDto category : categoryList) {
+//      response.add(
+//          BoardPageResponseDto.builder()
+//              .category(category)
+//              .boardList(boardService.getBoardList(pageable, category.getCategoryId(), boardType))
+//              .build());
+//    }
+    return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId, boardType));
   }
 
   @GetMapping("/category")

@@ -284,7 +284,7 @@ public class BoardServiceTest {
         .commentContents("새로운 댓글 입니다")
         .build();
 
-    boardService.registerComment(commentRegisterRequestDto, memberId, memberName);
+    boardService.registerComment(commentRegisterRequestDto, memberId, memberName, "test_profile");
   }
 
   @Test
