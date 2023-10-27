@@ -25,10 +25,10 @@ public class BoardResponseDto {
   private boolean isDeleted;
   private LocalDateTime createdAt;
 
-  @JsonInclude(Include.NON_NULL)
+//  @JsonInclude(Include.NON_NULL)
   private LocalDateTime updatedAt;
 
-  @JsonInclude(Include.NON_NULL)
+//  @JsonInclude(Include.NON_NULL)
   private String thumbnail;
 
   public BoardResponseDto(Board board) {

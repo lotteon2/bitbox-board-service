@@ -11,6 +11,8 @@ import com.bitbox.board.dto.response.BoardResponseDto;
 import com.bitbox.board.dto.response.CategoryDto;
 import com.bitbox.board.dto.response.CommentResponseDto;
 import com.bitbox.board.service.BoardService;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -47,17 +49,6 @@ public class BoardController {
       @RequestParam("categoryId") Long categoryId,
       @PageableDefault(size = 10, sort = "created_at,desc") Pageable pageable)
       throws Exception {
-
-//    List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
-//    List<BoardPageResponseDto> response = new ArrayList<>();
-//
-//    for (CategoryDto category : categoryList) {
-//      response.add(
-//          BoardPageResponseDto.builder()
-//              .category(category)
-//              .boardList(boardService.getBoardList(pageable, category.getCategoryId(), boardType))
-//              .build());
-//    }
     return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId, boardType));
   }
 
@@ -90,23 +81,13 @@ public class BoardController {
   }
 
   @GetMapping("/{boardType}/search")
-  public ResponseEntity<List<BoardPageResponseDto>> searchBoardList(
+  public ResponseEntity<Page<BoardResponseDto>> searchBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam("categoryId") Long categoryId,
       @RequestParam("keyword") String keyword,
       @PageableDefault(size = 4, sort = "createdAt") Pageable pageable)
       throws Exception {
-
-    List<CategoryDto> categoryList = boardService.getCategoryList(categoryId);
-    List<BoardPageResponseDto> response = new ArrayList<>();
-    for (CategoryDto category : categoryList) {
-      response.add(
-          BoardPageResponseDto.builder()
-              .category(category)
-              .boardList(boardService.searchBoardList(pageable, categoryId, keyword, boardType))
-              .build());
-    }
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(boardService.searchBoardList(pageable, categoryId, keyword, boardType));
   }
 
   @GetMapping("{boardType}/detail")
@@ -127,7 +108,7 @@ public class BoardController {
       @RequestHeader("memberProfileImg") String memberProfileImg)
       throws Exception {
     return ResponseEntity.ok(
-        boardService.registerBoard(request, memberId, memberName, memberProfileImg));
+        boardService.registerBoard(request, memberId, URLDecoder.decode(memberName, StandardCharsets.UTF_8), memberProfileImg));
   }
 
   @PutMapping("/{boardType}")
@@ -171,7 +152,7 @@ public class BoardController {
       @RequestHeader("memberNickname") String memberName,
       @RequestHeader("memberProfileImg") String memberProfileImg)
       throws Exception {
-    return ResponseEntity.ok(boardService.registerComment(request, memberId, memberName, memberProfileImg));
+    return ResponseEntity.ok(boardService.registerComment(request, memberId, URLDecoder.decode(memberName, StandardCharsets.UTF_8), memberProfileImg));
   }
 
   @PutMapping("/comment")
