@@ -347,10 +347,6 @@ public class BoardService {
   @Transactional
   public boolean modifyComment(CommentModifyRequestDto commentRequestDto, String memberId)
       throws Exception {
-    Board board =
-        boardRepository
-            .findById(commentRequestDto.getBoardId())
-            .orElseThrow(BoardNotFoundException::new);
     Comment comment =
         commentRepository
             .findById(commentRequestDto.getCommentId())
@@ -361,7 +357,6 @@ public class BoardService {
 
     commentRepository.save(
         comment.toBuilder()
-            .board(board)
             .commentContents(commentRequestDto.getCommentContents())
             .build());
 

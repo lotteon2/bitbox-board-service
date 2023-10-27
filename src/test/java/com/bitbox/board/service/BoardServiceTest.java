@@ -197,7 +197,6 @@ public class BoardServiceTest {
         BoardModifyRequestDto.builder()
             .boardId(id)
             .categoryId(categoryList.get(0).getId())
-            .memberId("member_100")
             .boardTitle("update title")
             .boardContents("update contents")
             .build();
@@ -221,7 +220,6 @@ public class BoardServiceTest {
               BoardModifyRequestDto.builder()
                   .boardId(id)
                   .categoryId(categoryList.get(0).getId())
-                  .memberId("member_Error")
                   .boardTitle("update title")
                   .boardContents("update contents")
                   .build();
@@ -283,7 +281,6 @@ public class BoardServiceTest {
         .boardId(boardList.get(0).getId())
         .commentContents("새로운 댓글 입니다")
         .build();
-
     boardService.registerComment(commentRegisterRequestDto, memberId, memberName, "test_profile");
   }
 

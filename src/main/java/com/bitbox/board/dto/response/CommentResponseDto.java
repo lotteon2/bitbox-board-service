@@ -18,6 +18,8 @@ public class CommentResponseDto {
 
   private Long commentId;
 
+  private Long boardId;
+
   @JsonInclude(Include.NON_NULL)
   private Long masterCommentId;
 
@@ -31,6 +33,7 @@ public class CommentResponseDto {
 
   public CommentResponseDto(Comment comment) {
     this.commentId = comment.getId();
+    this.boardId = comment.getBoard().getId();
     this.memberId = comment.getMemberId();
     this.commentContents = comment.getCommentContents();
     this.createdAt = comment.getCreatedAt();
