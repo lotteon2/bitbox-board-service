@@ -35,6 +35,8 @@ public class CommentResponseDto {
 
   private String commentContents;
 
+  private boolean isManagement = false;
+
   private LocalDateTime createdAt;
 
   public CommentResponseDto(Comment comment) {
@@ -50,5 +52,9 @@ public class CommentResponseDto {
     this.masterCommentId = Optional.ofNullable(comment.getMasterComment())
         .map(Comment::getId)
         .orElse(-1L);
+  }
+
+  public void updateManagement() {
+    this.isManagement = true;
   }
 }

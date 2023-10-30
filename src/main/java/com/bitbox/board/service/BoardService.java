@@ -152,9 +152,7 @@ public class BoardService {
     Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
     BoardDetailResponseDto boardDetail =
-        BoardDetailResponseDto.builder()
-            .boardResponse(new BoardResponseDto(board))
-            .build();
+        BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
 
     List<BoardImage> boardImageList = boardImageRepository.findByBoardId(boardId);
     if (!boardImageList.isEmpty())
@@ -173,10 +171,24 @@ public class BoardService {
                     .collect(Collectors.toList()))
             .build();
 
+    // Todo 필히 리팩토링!!
+    for (CommentResponseDto comment : boardDetail.getCommentList()) {
+      if (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority)) {
+        comment.updateManagement();
+        if (!comment.getCommentList().isEmpty()) {
+          for (CommentResponseDto childComment : comment.getCommentList()) {
+            if (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority)) {
+              childComment.updateManagement();
+            }
+          }
+        }
+      }
+    }
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
     if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {
       return boardDetail.toBuilder().isManagement(true).build();
     }
+
     return boardDetail;
   }
 
@@ -200,7 +212,8 @@ public class BoardService {
             .findById(boardRequestDto.getCategoryId())
             .orElseThrow(CategoryNotFoundException::new);
 
-    Board board = boardRequestDto.toEntity(category, memberId, memberName, memberProfileImg, authority);
+    Board board =
+        boardRequestDto.toEntity(category, memberId, memberName, memberProfileImg, authority);
     boardRepository.save(board);
 
     // DDB에 Board thumnail 저장
