@@ -53,7 +53,7 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .where(
             board.isDeleted.isFalse(),
             board.boardTitle.contains(boardTitle),
-            board.category.id.eq(categoryId),
+            board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
             board.category.isDeleted.isFalse())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize());
