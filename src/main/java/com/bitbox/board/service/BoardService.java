@@ -152,7 +152,7 @@ public class BoardService {
     Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
     BoardDetailResponseDto boardDetail =
-        BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
+        BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board, authority)).build();
 
     List<BoardImage> boardImageList = boardImageRepository.findByBoardId(boardId);
     if (!boardImageList.isEmpty())
