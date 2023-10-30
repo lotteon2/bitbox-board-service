@@ -159,11 +159,6 @@ public class BoardService {
       boardDetail.getBoardResponse().updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
 
     List<Comment> comments = board.getComments();
-    if(comments.get(0).getCommentList() == null) {
-      log.info("null임");
-    } else {
-      log.info("댓글 : " + comments.get(0).getCommentList().get(0).getCommentContents());
-    }
     // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
       boardDetail =
           boardDetail.toBuilder()
