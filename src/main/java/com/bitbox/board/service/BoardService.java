@@ -159,14 +159,19 @@ public class BoardService {
       boardDetail.getBoardResponse().updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
 
     List<Comment> comments = board.getComments();
+    if(comments.get(0).getCommentList() == null) {
+      log.info("null임");
+    } else {
+      log.info("댓글 : " + comments.get(0).getCommentList().get(0).getCommentContents());
+    }
     // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
-    if (!Objects.isNull(comments)) {
       boardDetail =
           boardDetail.toBuilder()
               .commentList(
-                  comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
+                  comments.stream()
+                      .filter(comment -> comment.getMasterComment() == null && !comment.isDeleted())
+                      .map(CommentResponseDto::new).collect(Collectors.toList()))
               .build();
-    }
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
     if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {

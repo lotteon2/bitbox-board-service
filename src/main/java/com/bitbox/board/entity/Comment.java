@@ -1,5 +1,6 @@
 package com.bitbox.board.entity;
 
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -37,6 +39,9 @@ public class Comment extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "master_comment_id", foreignKey = @ForeignKey(name = "fk_master_comment_to_comment"))
   private Comment masterComment;
+
+  @OneToMany(mappedBy = "masterComment")
+  private List<Comment> commentList;
 
   @NotNull
   @Column(name = "member_id")
