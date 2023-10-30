@@ -88,7 +88,7 @@ public class BoardController {
       @RequestParam("keyword") String keyword,
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
       throws Exception {
-    return ResponseEntity.ok(boardService.searchBoardList(pageable, categoryId, keyword, boardType));
+    return ResponseEntity.ok(boardService.searchBoardList(pageable, categoryId, URLDecoder.decode(keyword, StandardCharsets.UTF_8), boardType));
   }
 
   @GetMapping("{boardType}/detail")
