@@ -23,8 +23,10 @@ public class BoardResponseDto {
   private String categoryName;
   private String boardTitle;
   private String boardContents;
-  private String authority;
   private LocalDateTime createdAt;
+
+  @JsonInclude(Include.NON_NULL)
+  private String authority;
 
   @JsonInclude(Include.NON_NULL)
   private boolean isDeleted;

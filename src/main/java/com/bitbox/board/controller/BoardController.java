@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +48,7 @@ public class BoardController {
   public ResponseEntity<Page<BoardResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam("categoryId") Long categoryId,
-      @PageableDefault(size = 10, sort = "created_at,desc") Pageable pageable)
+      @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable)
       throws Exception {
     return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId, boardType));
   }
@@ -85,7 +86,7 @@ public class BoardController {
       @PathVariable("boardType") String boardType,
       @RequestParam("categoryId") Long categoryId,
       @RequestParam("keyword") String keyword,
-      @PageableDefault(size = 4, sort = "createdAt") Pageable pageable)
+      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
       throws Exception {
     return ResponseEntity.ok(boardService.searchBoardList(pageable, categoryId, keyword, boardType));
   }
