@@ -25,6 +25,8 @@ public class CommentResponseDto {
 
   private String memberId;
 
+  private String memberName;
+
   private String memberProfileImage;
 
   private String commentContents;
@@ -35,6 +37,7 @@ public class CommentResponseDto {
     this.commentId = comment.getId();
     this.boardId = comment.getBoard().getId();
     this.memberId = comment.getMemberId();
+    this.memberName = comment.getMemberName();
     this.commentContents = comment.getCommentContents();
     this.createdAt = comment.getCreatedAt();
     this.memberProfileImage = comment.getMemberProfileImage();
