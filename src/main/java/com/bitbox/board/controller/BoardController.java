@@ -107,7 +107,7 @@ public class BoardController {
       @RequestHeader("memberId") String memberId,
       @RequestHeader("memberNickname") String memberName,
       @RequestHeader("memberProfileImg") String memberProfileImg,
-      @RequestHeader("authority") String authority)
+      @RequestHeader("memberAuthority") String authority)
       throws Exception {
     return ResponseEntity.ok(
         boardService.registerBoard(request, memberId, URLDecoder.decode(memberName, StandardCharsets.UTF_8), memberProfileImg, authority));
