@@ -59,6 +59,10 @@ public class Board extends BaseEntity {
   private String memberProfileImage;
 
   @NotNull
+  @Column(name = "member_authority")
+  private String memberAuthority;
+
+  @NotNull
   @Column(name = "board_title")
   private String boardTitle;
 

@@ -152,21 +152,26 @@ public class BoardService {
     Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
     BoardDetailResponseDto boardDetail =
-        BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board, authority)).build();
+        BoardDetailResponseDto.builder()
+            .boardResponse(new BoardResponseDto(board))
+            .build();
 
     List<BoardImage> boardImageList = boardImageRepository.findByBoardId(boardId);
     if (!boardImageList.isEmpty())
-      boardDetail.getBoardResponse().updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
+      boardDetail
+          .getBoardResponse()
+          .updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
 
     List<Comment> comments = board.getComments();
     // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
-      boardDetail =
-          boardDetail.toBuilder()
-              .commentList(
-                  comments.stream()
-                      .filter(comment -> comment.getMasterComment() == null && !comment.isDeleted())
-                      .map(CommentResponseDto::new).collect(Collectors.toList()))
-              .build();
+    boardDetail =
+        boardDetail.toBuilder()
+            .commentList(
+                comments.stream()
+                    .filter(comment -> comment.getMasterComment() == null && !comment.isDeleted())
+                    .map(CommentResponseDto::new)
+                    .collect(Collectors.toList()))
+            .build();
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
     if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {
@@ -186,7 +191,8 @@ public class BoardService {
       BoardRegisterRequestDto boardRequestDto,
       String memberId,
       String memberName,
-      String memberPrfoileImg)
+      String memberProfileImg,
+      String authority)
       throws Exception {
 
     Category category =
@@ -194,7 +200,7 @@ public class BoardService {
             .findById(boardRequestDto.getCategoryId())
             .orElseThrow(CategoryNotFoundException::new);
 
-    Board board = boardRequestDto.toEntity(category, memberId, memberName, memberPrfoileImg);
+    Board board = boardRequestDto.toEntity(category, memberId, memberName, memberProfileImg, authority);
     boardRepository.save(board);
 
     // DDB에 Board thumnail 저장

@@ -29,7 +29,7 @@ public class BoardRegisterRequestDto {
   @Nullable
   private String thumbnail;
 
-  public Board toEntity(Category category, String memberId, String memberName, String memberProfileImg) {
+  public Board toEntity(Category category, String memberId, String memberName, String memberProfileImg, String authority) {
     return Board.builder()
         .boardTitle(boardTitle)
         .boardContents(boardContents)
@@ -37,6 +37,7 @@ public class BoardRegisterRequestDto {
         .memberId(memberId)
         .memberName(memberName)
         .memberProfileImage(memberProfileImg)
+        .memberAuthority(authority)
         .build();
   }
 }

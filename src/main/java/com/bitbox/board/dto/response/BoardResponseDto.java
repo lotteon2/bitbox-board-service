@@ -19,6 +19,7 @@ public class BoardResponseDto {
   private String memberId;
   private String memberName;
   private String memberProfileImg;
+  private String memberAuthority;
   private Long categoryId;
   private String categoryName;
   private String boardTitle;
@@ -42,26 +43,13 @@ public class BoardResponseDto {
     this.memberId = board.getMemberId();
     this.memberName = board.getMemberName();
     this.memberProfileImg = board.getMemberProfileImage();
+    this.memberAuthority = board.getMemberAuthority();
     this.categoryId = board.getCategory().getId();
     this.categoryName = board.getCategory().getCategoryName();
     this.boardTitle = board.getBoardTitle();
     this.boardContents = board.getBoardContents();
     this.isDeleted = board.isDeleted();
     this.createdAt = board.getCreatedAt();
-  }
-
-  public BoardResponseDto(Board board, String authority) {
-    this.boardId = board.getId();
-    this.memberId = board.getMemberId();
-    this.memberName = board.getMemberName();
-    this.memberProfileImg = board.getMemberProfileImage();
-    this.categoryId = board.getCategory().getId();
-    this.categoryName = board.getCategory().getCategoryName();
-    this.boardTitle = board.getBoardTitle();
-    this.boardContents = board.getBoardContents();
-    this.isDeleted = board.isDeleted();
-    this.createdAt = board.getCreatedAt();
-    this.authority = authority;
   }
 
   public void updateThumbnail(String thumbnail) {
