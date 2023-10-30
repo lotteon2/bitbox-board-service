@@ -62,4 +62,10 @@ public class Comment extends BaseEntity {
   @NotNull
   @Column(name = "is_deleted", columnDefinition = "boolean default false")
   private boolean isDeleted;
+
+  private boolean isManagement;
+
+  public void updateManagement() {
+    this.isManagement = true;
+  }
 }

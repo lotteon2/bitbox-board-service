@@ -52,9 +52,6 @@ public class CommentResponseDto {
     this.masterCommentId = Optional.ofNullable(comment.getMasterComment())
         .map(Comment::getId)
         .orElse(-1L);
-  }
-
-  public void updateManagement() {
-    this.isManagement = true;
+    this.isManagement = comment.isManagement();
   }
 }

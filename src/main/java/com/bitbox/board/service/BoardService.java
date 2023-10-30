@@ -161,6 +161,13 @@ public class BoardService {
           .updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
 
     List<Comment> comments = board.getComments();
+
+    for (Comment comment : comments) {
+      if (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority)) {
+        comment.updateManagement();
+      }
+    }
+
     // 게시글에 댓글이 있을 경우 댓글을 포함한 결과를 반환
     boardDetail =
         boardDetail.toBuilder()
@@ -171,19 +178,6 @@ public class BoardService {
                     .collect(Collectors.toList()))
             .build();
 
-    // Todo 필히 리팩토링!!
-    for (CommentResponseDto comment : boardDetail.getCommentList()) {
-      if (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority)) {
-        comment.updateManagement();
-        if (!comment.getCommentList().isEmpty()) {
-          for (CommentResponseDto childComment : comment.getCommentList()) {
-            if (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority)) {
-              childComment.updateManagement();
-            }
-          }
-        }
-      }
-    }
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
     if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {
       return boardDetail.toBuilder().isManagement(true).build();
