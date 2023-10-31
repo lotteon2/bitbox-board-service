@@ -48,7 +48,7 @@ public class BoardController {
   public ResponseEntity<Page<BoardResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam("categoryId") Long categoryId,
-      @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.ASC) Pageable pageable)
+      @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable)
       throws Exception {
     return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId, boardType));
   }
@@ -86,7 +86,7 @@ public class BoardController {
       @PathVariable("boardType") String boardType,
       @RequestParam("categoryId") Long categoryId,
       @RequestParam("keyword") String keyword,
-      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable)
+      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
       throws Exception {
     return ResponseEntity.ok(boardService.searchBoardList(pageable, categoryId, URLDecoder.decode(keyword, StandardCharsets.UTF_8), boardType));
   }
@@ -133,7 +133,7 @@ public class BoardController {
 
   @GetMapping("/member")
   public ResponseEntity<Page<BoardResponseDto>> getMemberBoard(
-      @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable,
+      @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(boardService.getMemberBoard(pageable, memberId));
@@ -141,7 +141,7 @@ public class BoardController {
 
   @GetMapping("/member/comment")
   public ResponseEntity<Page<CommentResponseDto>> getMemberComment(
-      @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable,
+      @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(boardService.getMemberComment(pageable, memberId));

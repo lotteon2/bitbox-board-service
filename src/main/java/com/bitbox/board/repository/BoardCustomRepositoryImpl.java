@@ -33,6 +33,7 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
             board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
             board.category.isDeleted.isFalse()
         )
+        .orderBy(board.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize());
 
@@ -54,6 +55,7 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
             board.boardTitle.contains(boardTitle),
             board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
             board.category.isDeleted.isFalse())
+        .orderBy(board.createdAt.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize());
 
@@ -62,26 +64,4 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
 
     return new PageImpl<>(results, pageable, total);
   }
-
-//  @Override
-//  public Optional<Board> findDetailById(Long boardId) {
-//    QComment subComment = new QComment("subComment");
-//
-//    JPAQuery<Board> query =
-//        jpaQueryFactory
-//            .selectFrom(board)
-//            .innerJoin(board.comments, comment)
-//            .fetchJoin()
-//            .innerJoin(comment.commentList, subComment)
-//            .fetchJoin()
-//            .where(
-//                board.isDeleted.isFalse(),
-//                comment.isDeleted.isFalse(),
-//                comment.masterComment.isNull(),
-//                subComment.isNotNull(),
-//                subComment.isDeleted.isFalse()
-//                );
-//
-//    return Optional.ofNullable(query.fetchOne());
-//  }
 }

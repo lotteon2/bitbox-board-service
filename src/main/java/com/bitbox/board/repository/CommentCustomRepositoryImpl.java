@@ -31,7 +31,9 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
             comment.masterComment.isNull(),
             comment.isDeleted.isFalse(),
             child.isNull().or(child.isDeleted.isFalse())
-        );
+        )
+        .orderBy(comment.createdAt.desc())
+        .orderBy(child.createdAt.desc());
     
     return query.fetch();
   }
