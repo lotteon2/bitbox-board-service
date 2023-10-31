@@ -1,7 +1,6 @@
 package com.bitbox.board.repository;
 
 import static com.bitbox.board.entity.QBoard.*;
-import static com.bitbox.board.entity.QCategory.*;
 
 import com.bitbox.board.entity.Board;
 import com.querydsl.jpa.impl.JPAQuery;

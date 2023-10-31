@@ -28,6 +28,8 @@ import com.bitbox.board.repository.CommentRepository;
 import com.bitbox.board.vo.BoardImageId;
 import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
 import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
+import io.github.bitbox.bitbox.dto.NotificationDto;
+import io.github.bitbox.bitbox.enums.NotificationType;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,8 +58,8 @@ public class BoardService {
   private final CommentRepository commentRepository;
   private final ClassCategoryRepository classCategoryRepository;
   private final BoardImageRepository boardImageRepository;
-  private final S3UploadUtil s3UploadUtil;
-  private static final String IMG_DIR = "board_thumbnail";
+  private final KafkaTemplate<String, NotificationDto> kafkaTemplate;
+
   private Map<String, String> map;
 
   @PostConstruct
@@ -156,7 +159,6 @@ public class BoardService {
     BoardDetailResponseDto boardDetail =
         BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
 
-
     List<BoardImage> boardImageList = boardImageRepository.findByBoardId(boardId);
     if (!boardImageList.isEmpty())
       boardDetail
@@ -164,10 +166,13 @@ public class BoardService {
           .updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
 
     for (Comment comment : comments) {
-      if (memberId != null
-          && authority != null
-          && (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority))) {
+      if (isAuthority(comment.getMemberId(), memberId, authority)) {
         comment.updateManagement();
+        for (Comment child : comment.getCommentList()) {
+          if (isAuthority(comment.getMemberId(), memberId, authority)) {
+            child.updateManagement();
+          }
+        }
       }
     }
 
@@ -175,16 +180,11 @@ public class BoardService {
     boardDetail =
         boardDetail.toBuilder()
             .commentList(
-                comments.stream()
-                    .map(CommentResponseDto::new)
-                    .collect(Collectors.toList())
-            )
+                comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
             .build();
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
-    if (memberId != null
-        && authority != null
-        && (memberId.equals(board.getMemberId()) || isManagementAuthority(authority))) {
+    if (isAuthority(board.getMemberId(), memberId, authority)) {
       return boardDetail.toBuilder().isManagement(true).build();
     }
 
@@ -353,6 +353,15 @@ public class BoardService {
     }
 
     commentRepository.save(comment);
+
+    kafkaTemplate.send(
+        "alarmTopic",
+        NotificationDto.builder()
+            .notificationType(NotificationType.COMMENT)
+            .boardId(board.getId())
+            .receiverId(board.getMemberId())
+            .senderNickname(memberName)
+            .build());
 
     return true;
   }
@@ -530,5 +539,11 @@ public class BoardService {
    */
   public boolean isManagementAuthority(String authority) {
     return authority.equals("ADMIN") || authority.equals("MANAGER");
+  }
+
+  public boolean isAuthority(String id, String memberId, String authority) {
+    return memberId != null
+        && authority != null
+        && (memberId.equals(id) || isManagementAuthority(authority));
   }
 }
