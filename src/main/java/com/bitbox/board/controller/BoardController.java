@@ -133,7 +133,7 @@ public class BoardController {
 
   @GetMapping("/member")
   public ResponseEntity<Page<BoardResponseDto>> getMemberBoard(
-      @PageableDefault(size = 3, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+      @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(boardService.getMemberBoard(pageable, memberId));
@@ -141,7 +141,7 @@ public class BoardController {
 
   @GetMapping("/member/comment")
   public ResponseEntity<Page<CommentResponseDto>> getMemberComment(
-      @PageableDefault(size = 3, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+      @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @RequestHeader("memberId") String memberId)
       throws Exception {
     return ResponseEntity.ok(boardService.getMemberComment(pageable, memberId));
