@@ -151,8 +151,11 @@ public class BoardService {
       throws Exception {
     Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
+    List<Comment> comments = commentRepository.findAllByBoardId(boardId);
+
     BoardDetailResponseDto boardDetail =
         BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
+
 
     List<BoardImage> boardImageList = boardImageRepository.findByBoardId(boardId);
     if (!boardImageList.isEmpty())
@@ -160,10 +163,10 @@ public class BoardService {
           .getBoardResponse()
           .updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
 
-    List<Comment> comments = board.getComments();
-
     for (Comment comment : comments) {
-      if (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority)) {
+      if (memberId != null
+          && authority != null
+          && (memberId.equals(comment.getMemberId()) || isManagementAuthority(authority))) {
         comment.updateManagement();
       }
     }
@@ -173,13 +176,15 @@ public class BoardService {
         boardDetail.toBuilder()
             .commentList(
                 comments.stream()
-                    .filter(comment -> comment.getMasterComment() == null && !comment.isDeleted())
                     .map(CommentResponseDto::new)
-                    .collect(Collectors.toList()))
+                    .collect(Collectors.toList())
+            )
             .build();
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
-    if (memberId.equals(board.getMemberId()) || isManagementAuthority(authority)) {
+    if (memberId != null
+        && authority != null
+        && (memberId.equals(board.getMemberId()) || isManagementAuthority(authority))) {
       return boardDetail.toBuilder().isManagement(true).build();
     }
 

@@ -94,8 +94,8 @@ public class BoardController {
   @GetMapping("{boardType}/detail")
   public ResponseEntity<BoardDetailResponseDto> getBoardDetail(
       @RequestParam("boardId") Long boardId,
-      @RequestHeader("memberId") String memberId,
-      @RequestHeader("memberAuthority") String authority)
+      @RequestHeader(value = "memberId", required = false) String memberId,
+      @RequestHeader(value = "memberAuthority", required = false) String authority)
       throws Exception {
 
     return ResponseEntity.ok(boardService.getBoardDetail(boardId, memberId, authority));

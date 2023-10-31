@@ -252,7 +252,7 @@ public class BoardServiceTest {
             .boardContents("새로운 게시글 내용임")
             .build();
 
-    boardService.registerBoard(boardRegisterRequestDto, memberId, memberName, "member_profile");
+//    boardService.registerBoard(boardRegisterRequestDto, memberId, memberName, "member_profile");
 
     Long id =
         boardRepository

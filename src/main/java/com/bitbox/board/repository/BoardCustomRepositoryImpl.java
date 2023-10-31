@@ -1,18 +1,17 @@
 package com.bitbox.board.repository;
 
 import static com.bitbox.board.entity.QBoard.*;
+import static com.bitbox.board.entity.QCategory.*;
 
 import com.bitbox.board.entity.Board;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Slf4j
@@ -63,4 +62,26 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
 
     return new PageImpl<>(results, pageable, total);
   }
+
+//  @Override
+//  public Optional<Board> findDetailById(Long boardId) {
+//    QComment subComment = new QComment("subComment");
+//
+//    JPAQuery<Board> query =
+//        jpaQueryFactory
+//            .selectFrom(board)
+//            .innerJoin(board.comments, comment)
+//            .fetchJoin()
+//            .innerJoin(comment.commentList, subComment)
+//            .fetchJoin()
+//            .where(
+//                board.isDeleted.isFalse(),
+//                comment.isDeleted.isFalse(),
+//                comment.masterComment.isNull(),
+//                subComment.isNotNull(),
+//                subComment.isDeleted.isFalse()
+//                );
+//
+//    return Optional.ofNullable(query.fetchOne());
+//  }
 }
