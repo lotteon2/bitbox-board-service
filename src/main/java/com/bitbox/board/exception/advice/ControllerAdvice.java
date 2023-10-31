@@ -1,5 +1,7 @@
 package com.bitbox.board.exception.advice;
 
+import com.bitbox.board.exception.AdminClassCreateFailException;
+import com.bitbox.board.exception.AdminClassDeleteFailException;
 import com.bitbox.board.exception.BoardNotFoundException;
 import com.bitbox.board.exception.CategoryMissMatchException;
 import com.bitbox.board.exception.CategoryNotFoundException;
@@ -44,6 +46,18 @@ public class ControllerAdvice {
   public ErrorResponse handleInvalidDataAccessApiUsageException(
       InvalidDataAccessApiUsageException e) {
     return ErrorResponse.builder().message("잘못된 검색 범위입니다.").build();
+  }
+
+  @ExceptionHandler(AdminClassCreateFailException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse AdminClassCreateFailException(AdminClassCreateFailException e) {
+    return getErrorResponse(e);
+  }
+
+  @ExceptionHandler(AdminClassDeleteFailException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse AdminClassDeleteFailException(AdminClassDeleteFailException e) {
+    return getErrorResponse(e);
   }
 
   @ExceptionHandler(CategoryMissMatchException.class)

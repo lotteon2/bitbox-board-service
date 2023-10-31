@@ -28,6 +28,9 @@ public class BoardResponseDto {
   private LocalDateTime createdAt;
 
   @JsonInclude(Include.NON_NULL)
+  private Long masterCategoryId;
+
+  @JsonInclude(Include.NON_NULL)
   private String authority;
 
   @JsonInclude(Include.NON_NULL)
@@ -55,5 +58,9 @@ public class BoardResponseDto {
 
   public void updateThumbnail(String thumbnail) {
     this.thumbnail = thumbnail;
+  }
+
+  public void updateMasterCategoryId(Long masterCategoryId) {
+    this.masterCategoryId = masterCategoryId;
   }
 }

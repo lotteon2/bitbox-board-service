@@ -1,6 +1,7 @@
 package com.bitbox.board.service;
 
 import com.bitbox.board.config.util.S3UploadUtil;
+import com.bitbox.board.dto.BoardType;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.request.CategoryModifyRequestDto;
@@ -15,6 +16,8 @@ import com.bitbox.board.entity.BoardImage;
 import com.bitbox.board.entity.Category;
 import com.bitbox.board.entity.ClassCategory;
 import com.bitbox.board.entity.Comment;
+import com.bitbox.board.exception.AdminClassCreateFailException;
+import com.bitbox.board.exception.AdminClassDeleteFailException;
 import com.bitbox.board.exception.BoardNotFoundException;
 import com.bitbox.board.exception.CategoryMissMatchException;
 import com.bitbox.board.exception.CategoryNotFoundException;
@@ -42,6 +45,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,17 +64,6 @@ public class BoardService {
   private final BoardImageRepository boardImageRepository;
   private final KafkaTemplate<String, NotificationDto> kafkaTemplate;
 
-  private Map<String, String> map;
-
-  @PostConstruct
-  public void settingMap() {
-    map = new HashMap<>();
-    map.put("devlog", "데브로그");
-    map.put("alumni", "알럼나이");
-    map.put("community", "커뮤니티");
-    map.put("senior", "선배들의 이야기");
-  }
-
   /**
    * 게시글 목록 조회 boardType이 devlog일 경우 글 목록에 필요한 썸네일 추가 (DynamoDB 조회, S3 경로 반환)
    *
@@ -84,7 +77,9 @@ public class BoardService {
     if (!boardList.getContent().isEmpty()) {
       String masterCategoryName =
           boardList.getContent().get(0).getCategory().getMasterCategory().getCategoryName();
-      if (!masterCategoryName.equals(map.get(boardType))) throw new CategoryMissMatchException();
+      if (!masterCategoryName.equals(BoardType.findByCategory(boardType)))
+        ;
+      throw new CategoryMissMatchException();
     }
 
     Page<BoardResponseDto> response = boardList.map(BoardResponseDto::new);
@@ -136,7 +131,8 @@ public class BoardService {
     if (!boardList.getContent().isEmpty()) {
       String masterCategoryName =
           boardList.getContent().get(0).getCategory().getMasterCategory().getCategoryName();
-      if (!masterCategoryName.equals(map.get(boardType))) throw new CategoryMissMatchException();
+      if (!masterCategoryName.equals(BoardType.findByCategory(boardType)))
+        throw new CategoryMissMatchException();
     }
 
     return boardList.map(BoardResponseDto::new);
@@ -304,7 +300,19 @@ public class BoardService {
    */
   public Page<BoardResponseDto> getMemberBoard(Pageable pageable, String memberId)
       throws Exception {
-    return boardRepository.findAllByMemberId(memberId, pageable).map(BoardResponseDto::new);
+    Page<Board> boards = boardRepository.findAllByMemberId(memberId, pageable);
+    Page<BoardResponseDto> response = boards.map(BoardResponseDto::new);
+    int idx = 0;
+    for (Board board : boards) {
+      if (board.getCategory().getMasterCategory() != null) {
+        response
+            .getContent()
+            .get(idx++)
+            .updateMasterCategoryId(
+                board.getCategory().getMasterCategory().getMasterCategory().getId());
+      }
+    }
+    return response;
   }
 
   /**
@@ -426,7 +434,7 @@ public class BoardService {
 
     Category masterCategory =
         categoryRepository
-            .findByCategoryName(map.get(boardType))
+            .findByCategoryName(BoardType.findByCategory(boardType))
             .orElseThrow(CategoryNotFoundException::new);
 
     Category category =
@@ -481,7 +489,7 @@ public class BoardService {
    * @param request
    * @throws Exception
    */
-  //  @KafkaListener(topics = "adminBoardTopic")
+  @KafkaListener(topics = "adminBoardTopic")
   @Transactional
   public void registerAdminCategory(AdminBoardRegisterDto request) throws Exception {
     try {
@@ -498,8 +506,7 @@ public class BoardService {
               .classId(request.getClassId())
               .build();
       classCategoryRepository.save(alumniClassCategory);
-    } catch (Exception e) {
-      // Todo : 반 게시판이 생성되지 않는다고 반 생성을 되돌리는 관점은 이상하다 -> 보상패턴 대신 고려?
+    } catch (AdminClassCreateFailException e) {
       throw e;
     }
   }
@@ -510,7 +517,7 @@ public class BoardService {
    * @param request
    * @throws Exception
    */
-  //  @KafkaListener(topics = "adminMemberBoardTopic")
+  @KafkaListener(topics = "adminMemberBoardTopic")
   @Transactional
   public void removeAdminCategory(AdminMemberBoardDto request) throws Exception {
     try {
@@ -525,8 +532,7 @@ public class BoardService {
               .orElseThrow(CategoryNotFoundException::new);
 
       categoryRepository.save(category.toBuilder().isDeleted(true).build());
-    } catch (Exception e) {
-      // kafka 보상 토픽 발행
+    } catch (AdminClassDeleteFailException e) {
       throw e;
     }
   }
