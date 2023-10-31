@@ -164,9 +164,9 @@ public class BoardController {
     return ResponseEntity.ok(boardService.modifyComment(request, memberId));
   }
 
-  @DeleteMapping("/comment/{commentId}")
+  @DeleteMapping("/comment")
   public ResponseEntity<Boolean> removeComment(
-      @PathVariable("commentId") Long commentId,
+      @RequestParam("commentId") Long commentId,
       @RequestHeader("memberId") String memberId,
       @RequestHeader("memberAuthority") String authority)
       throws Exception {
