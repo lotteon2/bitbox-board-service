@@ -1,7 +1,5 @@
 package com.bitbox.board.service;
 
-import com.bitbox.board.config.util.S3UploadUtil;
-import com.bitbox.board.dto.BoardType;
 import com.bitbox.board.dto.request.BoardModifyRequestDto;
 import com.bitbox.board.dto.request.BoardRegisterRequestDto;
 import com.bitbox.board.dto.request.CategoryModifyRequestDto;
@@ -32,15 +30,13 @@ import com.bitbox.board.vo.BoardImageId;
 import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
 import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
 import io.github.bitbox.bitbox.dto.NotificationDto;
+import io.github.bitbox.bitbox.enums.BoardType;
 import io.github.bitbox.bitbox.enums.NotificationType;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -49,7 +45,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
