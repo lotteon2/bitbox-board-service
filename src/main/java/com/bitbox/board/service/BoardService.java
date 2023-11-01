@@ -99,10 +99,11 @@ public class BoardService {
     Category category =
         categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
 
-    if (!Objects.isNull(category.getMasterCategory()))
+    if (!Objects.isNull(category.getMasterCategory()) && !category.isDeleted())
       return Collections.singletonList(new CategoryDto(category));
 
     return categoryRepository.findByMasterCategory_Id(categoryId).stream()
+        .filter(result -> !result.isDeleted())
         .map(CategoryDto::new)
         .collect(Collectors.toList());
   }
