@@ -72,8 +72,7 @@ public class BoardService {
       String masterCategoryName =
           boardList.getContent().get(0).getCategory().getMasterCategory().getCategoryName();
       if (!masterCategoryName.equals(BoardType.findByCategory(boardType)))
-        ;
-      throw new CategoryMissMatchException();
+        throw new CategoryMissMatchException();
     }
 
     Page<BoardResponseDto> response = boardList.map(BoardResponseDto::new);
