@@ -487,7 +487,7 @@ public class BoardService {
    * @param request
    * @throws Exception
    */
-  @KafkaListener(topics = "adminBoardTopic")
+  @KafkaListener(topics = "adminBoardCreateTopic")
   @Transactional
   public void registerAdminCategory(AdminBoardRegisterDto request) {
     try {
@@ -521,7 +521,7 @@ public class BoardService {
    * @param request
    * @throws Exception
    */
-  @KafkaListener(topics = "adminMemberBoardTopic")
+  @KafkaListener(topics = "adminBoardDeleteTopic")
   @Transactional
   public void removeAdminCategory(AdminMemberBoardDto request) {
     try {
