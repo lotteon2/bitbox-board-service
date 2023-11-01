@@ -43,16 +43,15 @@ public class CommentResponseDto {
   public CommentResponseDto(Comment comment) {
     this.commentId = comment.getId();
     this.boardId = comment.getBoard().getId();
-    this.commentList = comment.getCommentList().stream().map(CommentResponseDto::new).collect(
-        Collectors.toList());
+    this.commentList =
+        comment.getCommentList().stream().filter(child -> !child.isDeleted()).map(CommentResponseDto::new).collect(Collectors.toList());
     this.memberId = comment.getMemberId();
     this.memberName = comment.getMemberName();
     this.commentContents = comment.getCommentContents();
     this.createdAt = comment.getCreatedAt();
     this.memberProfileImage = comment.getMemberProfileImage();
-    this.masterCommentId = Optional.ofNullable(comment.getMasterComment())
-        .map(Comment::getId)
-        .orElse(-1L);
+    this.masterCommentId =
+        Optional.ofNullable(comment.getMasterComment()).map(Comment::getId).orElse(-1L);
     this.isManagement = comment.isManagement();
   }
 }

@@ -171,7 +171,8 @@ public class BoardService {
             .commentList(
                 comments.stream()
                     .filter(comment -> comment.getMasterComment() == null && !comment.isDeleted())
-                    .map(CommentResponseDto::new).collect(Collectors.toList()))
+                    .map(CommentResponseDto::new)
+                    .collect(Collectors.toList()))
             .build();
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
