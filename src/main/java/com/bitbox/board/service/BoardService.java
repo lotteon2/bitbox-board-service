@@ -298,8 +298,7 @@ public class BoardService {
         response
             .getContent()
             .get(idx)
-            .updateMasterCategoryId(
-                board.getCategory().getMasterCategory().getId());
+            .updateMasterCategoryId(board.getCategory().getMasterCategory().getId());
       }
       idx++;
     }
@@ -330,8 +329,7 @@ public class BoardService {
       CommentRegisterRequestDto commentRequestDto,
       String memberId,
       String memberName,
-      String memberProfileImg)
-      throws Exception {
+      String memberProfileImg) {
     Board board =
         boardRepository
             .findById(commentRequestDto.getBoardId())
@@ -351,6 +349,9 @@ public class BoardService {
     }
 
     commentRepository.save(comment);
+
+    if (memberId.equals(comment.getBoard().getMemberId()))
+      return true;
 
     kafkaTemplate.send(
         "alarmTopic",
@@ -547,6 +548,7 @@ public class BoardService {
 
   /**
    * 비회원 포함 게시글 권한 확인
+   *
    * @param id
    * @param memberId
    * @param authority
