@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Slf4j
@@ -37,9 +38,24 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .limit(pageable.getPageSize());
 
     List<Board> results = query.fetch();
-    long total = query.fetch().size();
 
-    return new PageImpl<>(results, pageable, total);
+    JPAQuery<Long> countQuery = jpaQueryFactory
+        .select(board.count())
+        .from(board)
+        .join(board.category)
+        .fetchJoin()
+        .where(
+            board.isDeleted.isFalse(),
+            board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
+            board.category.isDeleted.isFalse()
+        )
+        .orderBy(board.createdAt.desc());
+
+//    long total = query.fetch().size();
+
+//    return new PageImpl<>(results, pageable, total);
+//    return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
+    return new PageImpl<>(results, pageable, countQuery.fetchCount());
   }
 
   @Override
@@ -59,8 +75,23 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .limit(pageable.getPageSize());
 
     List<Board> results = query.fetch();
-    long total = query.fetch().size();
 
-    return new PageImpl<>(results, pageable, total);
+    JPAQuery<Long> countQuery = jpaQueryFactory
+        .select(board.count())
+        .from(board)
+        .join(board.category)
+        .fetchJoin()
+        .where(
+            board.isDeleted.isFalse(),
+            board.boardTitle.contains(boardTitle),
+            board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
+            board.category.isDeleted.isFalse())
+        .orderBy(board.createdAt.desc());
+
+//    long total = query.fetchCount();
+
+//    return new PageImpl<>(results, pageable, total);
+//    return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
+    return new PageImpl<>(results, pageable, countQuery.fetchCount());
   }
 }
