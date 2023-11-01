@@ -14,6 +14,7 @@ import com.bitbox.board.entity.BoardImage;
 import com.bitbox.board.entity.Category;
 import com.bitbox.board.entity.ClassCategory;
 import com.bitbox.board.entity.Comment;
+import com.bitbox.board.enums.BoardType;
 import com.bitbox.board.exception.AdminClassCreateFailException;
 import com.bitbox.board.exception.AdminClassDeleteFailException;
 import com.bitbox.board.exception.BoardNotFoundException;
@@ -30,7 +31,6 @@ import com.bitbox.board.vo.BoardImageId;
 import io.github.bitbox.bitbox.dto.AdminBoardRegisterDto;
 import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
 import io.github.bitbox.bitbox.dto.NotificationDto;
-import io.github.bitbox.bitbox.enums.BoardType;
 import io.github.bitbox.bitbox.enums.NotificationType;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -66,8 +66,7 @@ public class BoardService {
    * @param categoryId
    * @return BoardListResponseDto
    */
-  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType)
-      throws Exception {
+  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType) {
     Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
     if (!boardList.getContent().isEmpty()) {
       String masterCategoryName =
@@ -118,7 +117,7 @@ public class BoardService {
    * @return BoardListResponseDto
    */
   public Page<BoardResponseDto> searchBoardList(
-      Pageable pageable, Long categoryId, String title, String boardType) throws Exception {
+      Pageable pageable, Long categoryId, String title, String boardType) {
 
     Page<Board> boardList =
         boardRepository.findAllByBoardTitleAndCategoryIdFetchJoin(title, categoryId, pageable);
@@ -141,8 +140,7 @@ public class BoardService {
    * @param authority
    * @return BoardDetailResponseDto
    */
-  public BoardDetailResponseDto getBoardDetail(Long boardId, String memberId, String authority)
-      throws Exception {
+  public BoardDetailResponseDto getBoardDetail(Long boardId, String memberId, String authority) {
     Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
     List<Comment> comments = commentRepository.findAllByBoardId(boardId);
@@ -194,8 +192,7 @@ public class BoardService {
       String memberId,
       String memberName,
       String memberProfileImg,
-      String authority)
-      throws Exception {
+      String authority) {
 
     Category category =
         categoryRepository
@@ -229,7 +226,7 @@ public class BoardService {
    */
   @Transactional
   public boolean modifyBoard(
-      BoardModifyRequestDto boardRequestDto, String memberId, String authority) throws Exception {
+      BoardModifyRequestDto boardRequestDto, String memberId, String authority) {
     Category category =
         categoryRepository
             .findById(boardRequestDto.getCategoryId())
@@ -275,7 +272,7 @@ public class BoardService {
    * @return boolean
    */
   @Transactional
-  public boolean removeBoard(Long boardId, String memberId, String authority) throws Exception {
+  public boolean removeBoard(Long boardId, String memberId, String authority) {
     Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
     if (!board.getMemberId().equals(memberId) && !isManagementAuthority(authority))
@@ -293,8 +290,7 @@ public class BoardService {
    * @return Page<BoardResponseDto>
    * @throws Exception
    */
-  public Page<BoardResponseDto> getMemberBoard(Pageable pageable, String memberId)
-      throws Exception {
+  public Page<BoardResponseDto> getMemberBoard(Pageable pageable, String memberId) {
     Page<Board> boards = boardRepository.findAllByMemberId(memberId, pageable);
     Page<BoardResponseDto> response = boards.map(BoardResponseDto::new);
     int idx = 0;
@@ -318,8 +314,7 @@ public class BoardService {
    * @return Page<CommentResponseDto>
    * @throws Exception
    */
-  public Page<CommentResponseDto> getMemberComment(Pageable pageable, String memberId)
-      throws Exception {
+  public Page<CommentResponseDto> getMemberComment(Pageable pageable, String memberId) {
     return commentRepository.findAllByMemberId(memberId, pageable).map(CommentResponseDto::new);
   }
 
@@ -360,6 +355,9 @@ public class BoardService {
     kafkaTemplate.send(
         "alarmTopic",
         NotificationDto.builder()
+            .boardType(
+                BoardType.findByCategoryName(
+                    comment.getBoard().getCategory().getMasterCategory().getCategoryName()))
             .notificationType(NotificationType.COMMENT)
             .boardId(board.getId())
             .receiverId(board.getMemberId())
@@ -377,8 +375,7 @@ public class BoardService {
    * @throws Exception
    */
   @Transactional
-  public boolean modifyComment(CommentModifyRequestDto commentRequestDto, String memberId)
-      throws Exception {
+  public boolean modifyComment(CommentModifyRequestDto commentRequestDto, String memberId) {
     Comment comment =
         commentRepository
             .findById(commentRequestDto.getCommentId())
@@ -403,7 +400,7 @@ public class BoardService {
    * @throws Exception
    */
   @Transactional
-  public boolean removeComment(Long commentId, String memberId, String authority) throws Exception {
+  public boolean removeComment(Long commentId, String memberId, String authority) {
     Comment comment =
         commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
 
@@ -486,12 +483,17 @@ public class BoardService {
    */
   @KafkaListener(topics = "adminBoardTopic")
   @Transactional
-  public void registerAdminCategory(AdminBoardRegisterDto request) throws Exception {
+  public void registerAdminCategory(AdminBoardRegisterDto request) {
     try {
-      Category alumni = categoryRepository.findByCategoryName("알럼나이").orElseThrow();
+      Category alumni =
+          categoryRepository.findByCategoryName(BoardType.ALUMNI.getCategory()).orElseThrow();
 
       Category alumniNewCategory =
-          Category.builder().masterCategory(alumni).categoryName(request.getClassCode()).build();
+          Category.builder()
+              .masterCategory(alumni)
+              .categoryName("❤\uFE0F " + request.getClassCode() + "기")
+              .build();
+
       categoryRepository.save(alumniNewCategory);
 
       ClassCategory alumniClassCategory =
@@ -500,6 +502,7 @@ public class BoardService {
               .categoryId(alumniNewCategory.getId())
               .classId(request.getClassId())
               .build();
+
       classCategoryRepository.save(alumniClassCategory);
     } catch (AdminClassCreateFailException e) {
       throw e;
@@ -514,7 +517,7 @@ public class BoardService {
    */
   @KafkaListener(topics = "adminMemberBoardTopic")
   @Transactional
-  public void removeAdminCategory(AdminMemberBoardDto request) throws Exception {
+  public void removeAdminCategory(AdminMemberBoardDto request) {
     try {
       ClassCategory classCategory =
           classCategoryRepository
@@ -533,7 +536,7 @@ public class BoardService {
   }
 
   /**
-   * 게시글에 대한 추가 관리 권한 확인
+   * 게시글에 대한 관리 권한 확인
    *
    * @param authority
    * @return boolean
@@ -542,6 +545,13 @@ public class BoardService {
     return authority.equals("ADMIN") || authority.equals("MANAGER");
   }
 
+  /**
+   * 비회원 포함 게시글 권한 확인
+   * @param id
+   * @param memberId
+   * @param authority
+   * @return
+   */
   public boolean isAuthority(String id, String memberId, String authority) {
     return memberId != null
         && authority != null

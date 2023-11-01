@@ -3,6 +3,7 @@ package com.bitbox.board.exception.advice;
 import com.bitbox.board.exception.AdminClassCreateFailException;
 import com.bitbox.board.exception.AdminClassDeleteFailException;
 import com.bitbox.board.exception.BoardNotFoundException;
+import com.bitbox.board.exception.BoardTypeMissmatchException;
 import com.bitbox.board.exception.CategoryMissMatchException;
 import com.bitbox.board.exception.CategoryNotFoundException;
 import com.bitbox.board.exception.CommentNotFoundException;
@@ -63,6 +64,12 @@ public class ControllerAdvice {
   @ExceptionHandler(CategoryMissMatchException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponse CategoryMissMatchException(CategoryMissMatchException e) {
+    return getErrorResponse(e);
+  }
+
+  @ExceptionHandler(BoardTypeMissmatchException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse BoardTypeMissmatchException(BoardTypeMissmatchException e) {
     return getErrorResponse(e);
   }
 
