@@ -299,7 +299,7 @@ public class BoardService {
             .getContent()
             .get(idx)
             .updateMasterCategoryId(
-                board.getCategory().getMasterCategory().getMasterCategory().getId());
+                board.getCategory().getMasterCategory().getId());
       }
       idx++;
     }
