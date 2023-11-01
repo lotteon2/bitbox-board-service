@@ -142,7 +142,8 @@ public class BoardService {
   public BoardDetailResponseDto getBoardDetail(Long boardId, String memberId, String authority) {
     Board board = boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
 
-    List<Comment> comments = commentRepository.findAllByBoardId(boardId);
+//    List<Comment> comments = commentRepository.findAllByBoardId(boardId);
+    List<Comment> comments = board.getComments();
 
     BoardDetailResponseDto boardDetail =
         BoardDetailResponseDto.builder().boardResponse(new BoardResponseDto(board)).build();
@@ -157,7 +158,7 @@ public class BoardService {
       if (isAuthority(comment.getMemberId(), memberId, authority)) {
         comment.updateManagement();
         for (Comment child : comment.getCommentList()) {
-          if (isAuthority(comment.getMemberId(), memberId, authority)) {
+          if (isAuthority(child.getMemberId(), memberId, authority)) {
             child.updateManagement();
           }
         }
@@ -168,7 +169,9 @@ public class BoardService {
     boardDetail =
         boardDetail.toBuilder()
             .commentList(
-                comments.stream().map(CommentResponseDto::new).collect(Collectors.toList()))
+                comments.stream()
+                    .filter(comment -> comment.getMasterComment() == null && !comment.isDeleted())
+                    .map(CommentResponseDto::new).collect(Collectors.toList()))
             .build();
 
     // 게시글 권한이 확인될 시 응답에 수정권한 부여
