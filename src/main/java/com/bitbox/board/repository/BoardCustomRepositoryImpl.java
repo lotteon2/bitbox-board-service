@@ -43,19 +43,13 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .select(board.count())
         .from(board)
         .join(board.category)
-        .fetchJoin()
         .where(
             board.isDeleted.isFalse(),
             board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
             board.category.isDeleted.isFalse()
-        )
-        .orderBy(board.createdAt.desc());
+        );
 
-//    long total = query.fetch().size();
-
-//    return new PageImpl<>(results, pageable, total);
-//    return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
-    return new PageImpl<>(results, pageable, countQuery.fetchCount());
+    return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
   }
 
   @Override
@@ -80,18 +74,13 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository {
         .select(board.count())
         .from(board)
         .join(board.category)
-        .fetchJoin()
         .where(
             board.isDeleted.isFalse(),
             board.boardTitle.contains(boardTitle),
             board.category.id.eq(categoryId).or(board.category.masterCategory.id.eq(categoryId)),
-            board.category.isDeleted.isFalse())
-        .orderBy(board.createdAt.desc());
+            board.category.isDeleted.isFalse()
+        );
 
-//    long total = query.fetchCount();
-
-//    return new PageImpl<>(results, pageable, total);
-//    return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
-    return new PageImpl<>(results, pageable, countQuery.fetchCount());
+    return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
   }
 }
