@@ -297,10 +297,11 @@ public class BoardService {
       if (board.getCategory().getMasterCategory() != null) {
         response
             .getContent()
-            .get(idx++)
+            .get(idx)
             .updateMasterCategoryId(
                 board.getCategory().getMasterCategory().getMasterCategory().getId());
       }
+      idx++;
     }
     return response;
   }
