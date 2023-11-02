@@ -180,7 +180,6 @@ public class BoardService {
     if (isAuthority(board.getMemberId(), memberId, authority)) {
       return boardDetail.toBuilder().isManagement(true).build();
     }
-
     return boardDetail;
   }
 
