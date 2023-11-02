@@ -156,19 +156,12 @@ public class BoardService {
           .updateThumbnail(boardImageList.get(boardImageList.size() - 1).getImgUrl());
 
     for (Comment comment : comments) {
-      log.info("멤버 id : " + memberId);
-      log.info("댓글 id : " + comment.getMemberId());
-      if (isAuthority(comment.getMemberId(), memberId, authority)) {
-        log.info("들어옴");
+      if (isAuthority(comment.getMemberId(), memberId, authority))
         comment.updateManagement();
-        log.info("권한 업데이트 함");
-      }
+      
       for (Comment child : comment.getCommentList()) {
-        log.info("자식도 들어옴");
-        if (isAuthority(child.getMemberId(), memberId, authority)) {
+        if (isAuthority(child.getMemberId(), memberId, authority))
           child.updateManagement();
-          log.info("자식도 업데이트 함");
-        }
       }
     }
 
