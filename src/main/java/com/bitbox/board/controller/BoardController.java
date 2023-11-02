@@ -56,10 +56,8 @@ public class BoardController {
 
   @GetMapping("/category")
   public ResponseEntity<List<CategoryDto>> getCategoryList(
-      @RequestParam("categoryId") Long categoryId,
-      @RequestHeader("memberAuthority") String authority,
-      @RequestHeader("classId") String classId) {
-    return ResponseEntity.ok(boardService.getCategoryList(categoryId, authority, Long.parseLong(classId)));
+      @RequestParam("categoryId") Long categoryId) {
+    return ResponseEntity.ok(boardService.getCategoryList(categoryId));
   }
 
   @PostMapping("/{boardType}/category")

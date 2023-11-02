@@ -34,7 +34,6 @@ import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
 import io.github.bitbox.bitbox.dto.NotificationDto;
 import io.github.bitbox.bitbox.enums.NotificationType;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -106,28 +105,14 @@ public class BoardService {
    * @param categoryId
    * @return
    */
-  public List<CategoryDto> getCategoryList(Long categoryId, String authority, Long classId) {
+  public List<CategoryDto> getCategoryList(Long categoryId) {
     Category category =
         categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
 
     if (!Objects.isNull(category.getMasterCategory()) && !category.isDeleted())
       return Collections.singletonList(new CategoryDto(category));
 
-    List<Category> categoryList = categoryRepository.findByMasterCategory_Id(categoryId);
-    List<Category> resultList = new ArrayList<>();
-    if (!isManagementAuthority(authority) && category.getCategoryName().equals(BoardType.ALUMNI.getCategory())) {
-      for (Category child : categoryList) {
-        Optional<ClassCategory> optionalClassCategory =
-            classCategoryRepository.findByCategoryId(child.getId());
-        if (optionalClassCategory.isPresent() && optionalClassCategory.get().getClassId() != classId)
-            continue;
-        resultList.add(child);
-      }
-    } else {
-      resultList = categoryList;
-    }
-
-    return resultList.stream()
+    return categoryRepository.findByMasterCategory_Id(categoryId).stream()
         .filter(result -> !result.isDeleted())
         .map(CategoryDto::new)
         .collect(Collectors.toList());
