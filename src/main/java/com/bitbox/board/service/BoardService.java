@@ -18,6 +18,7 @@ import com.bitbox.board.enums.BoardType;
 import com.bitbox.board.exception.AdminClassCreateFailException;
 import com.bitbox.board.exception.AdminClassDeleteFailException;
 import com.bitbox.board.exception.BoardNotFoundException;
+import com.bitbox.board.exception.BoardUnauthorizedException;
 import com.bitbox.board.exception.CategoryMissMatchException;
 import com.bitbox.board.exception.CategoryNotFoundException;
 import com.bitbox.board.exception.CommentNotFoundException;
@@ -33,9 +34,11 @@ import io.github.bitbox.bitbox.dto.AdminMemberBoardDto;
 import io.github.bitbox.bitbox.dto.NotificationDto;
 import io.github.bitbox.bitbox.enums.NotificationType;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +69,15 @@ public class BoardService {
    * @param categoryId
    * @return BoardListResponseDto
    */
-  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType) {
+  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType, Long classId) {
+    if (boardType.equals(BoardType.ALUMNI.toString().toLowerCase())) {
+      Optional<ClassCategory> optionalClassCategory = classCategoryRepository.findByCategoryId(categoryId);
+      optionalClassCategory.ifPresent(classCategory -> {
+        if (classCategory.getClassId() != classId)
+          throw new BoardUnauthorizedException();
+      });
+    }
+
     Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
     if (!boardList.getContent().isEmpty()) {
       String masterCategoryName =
@@ -95,14 +106,28 @@ public class BoardService {
    * @param categoryId
    * @return
    */
-  public List<CategoryDto> getCategoryList(Long categoryId) {
+  public List<CategoryDto> getCategoryList(Long categoryId, String authority, Long classId) {
     Category category =
         categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
 
     if (!Objects.isNull(category.getMasterCategory()) && !category.isDeleted())
       return Collections.singletonList(new CategoryDto(category));
 
-    return categoryRepository.findByMasterCategory_Id(categoryId).stream()
+    List<Category> categoryList = categoryRepository.findByMasterCategory_Id(categoryId);
+    List<Category> resultList = new ArrayList<>();
+    if (!isManagementAuthority(authority) && category.getCategoryName().equals(BoardType.ALUMNI.getCategory())) {
+      for (Category child : categoryList) {
+        Optional<ClassCategory> optionalClassCategory =
+            classCategoryRepository.findByCategoryId(child.getId());
+        if (optionalClassCategory.isPresent() && optionalClassCategory.get().getClassId() != classId)
+            continue;
+        resultList.add(child);
+      }
+    } else {
+      resultList = categoryList;
+    }
+
+    return resultList.stream()
         .filter(result -> !result.isDeleted())
         .map(CategoryDto::new)
         .collect(Collectors.toList());
@@ -158,7 +183,7 @@ public class BoardService {
     for (Comment comment : comments) {
       if (isAuthority(comment.getMemberId(), memberId, authority))
         comment.updateManagement();
-      
+
       for (Comment child : comment.getCommentList()) {
         if (isAuthority(child.getMemberId(), memberId, authority))
           child.updateManagement();

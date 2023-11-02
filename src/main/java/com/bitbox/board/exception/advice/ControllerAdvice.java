@@ -4,6 +4,7 @@ import com.bitbox.board.exception.AdminClassCreateFailException;
 import com.bitbox.board.exception.AdminClassDeleteFailException;
 import com.bitbox.board.exception.BoardNotFoundException;
 import com.bitbox.board.exception.BoardTypeMissmatchException;
+import com.bitbox.board.exception.BoardUnauthorizedException;
 import com.bitbox.board.exception.CategoryMissMatchException;
 import com.bitbox.board.exception.CategoryNotFoundException;
 import com.bitbox.board.exception.CommentNotFoundException;
@@ -70,6 +71,12 @@ public class ControllerAdvice {
   @ExceptionHandler(BoardTypeMissmatchException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponse BoardTypeMissmatchException(BoardTypeMissmatchException e) {
+    return getErrorResponse(e);
+  }
+
+  @ExceptionHandler(BoardUnauthorizedException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  public ErrorResponse BoardUnauthorizedException(BoardUnauthorizedException e) {
     return getErrorResponse(e);
   }
 

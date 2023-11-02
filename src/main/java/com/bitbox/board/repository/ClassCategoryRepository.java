@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ClassCategoryRepository extends JpaRepository<ClassCategory, Category> {
   Optional<ClassCategory> findByClassId(Long classId);
+  Optional<ClassCategory> findByCategoryId(Long categoryId);
 }
