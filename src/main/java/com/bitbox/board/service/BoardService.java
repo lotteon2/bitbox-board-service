@@ -68,15 +68,7 @@ public class BoardService {
    * @param categoryId
    * @return BoardListResponseDto
    */
-  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType, Long classId) {
-    if (boardType.equals(BoardType.ALUMNI.toString().toLowerCase())) {
-      Optional<ClassCategory> optionalClassCategory = classCategoryRepository.findByCategoryId(categoryId);
-      optionalClassCategory.ifPresent(classCategory -> {
-        if (classCategory.getClassId() != classId)
-          throw new BoardUnauthorizedException();
-      });
-    }
-
+  public Page<BoardResponseDto> getBoardList(Pageable pageable, Long categoryId, String boardType) {
     Page<Board> boardList = boardRepository.findAllByCategoryIdFetchJoin(categoryId, pageable);
     if (!boardList.getContent().isEmpty()) {
       String masterCategoryName =

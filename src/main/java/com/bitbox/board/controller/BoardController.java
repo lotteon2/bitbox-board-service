@@ -48,10 +48,9 @@ public class BoardController {
   public ResponseEntity<Page<BoardResponseDto>> getBoardList(
       @PathVariable("boardType") String boardType,
       @RequestParam("categoryId") Long categoryId,
-      @RequestHeader("classId") String classId,
       @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable)
       throws Exception {
-    return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId, boardType, Long.parseLong(classId)));
+    return ResponseEntity.ok(boardService.getBoardList(pageable, categoryId, boardType));
   }
 
   @GetMapping("/category")
